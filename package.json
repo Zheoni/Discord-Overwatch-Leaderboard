@@ -1,0 +1,22 @@
+{
+  "name": "discordtestbot",
+  "version": "1.0.0",
+  "description": "Learning how to make a discord bot",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Zheoni/DiscordTestBot.git"
+  },
+  "author": "Zheoni",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Zheoni/DiscordTestBot/issues"
+  },
+  "homepage": "https://github.com/Zheoni/DiscordTestBot#readme",
+  "dependencies": {
+    "discord.js": "^11.3.2"
+  }
+}

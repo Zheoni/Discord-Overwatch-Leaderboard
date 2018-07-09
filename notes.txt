@@ -1,0 +1,2 @@
+Add the bot to the serer:
+    https://discordapp.com/api/oauth2/authorize?client_id=464614805005664258&permissions=0&scope=bot
