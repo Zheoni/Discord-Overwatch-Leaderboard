@@ -1,6 +1,5 @@
 const botconfig = require("./botconfig.json");
 const Discord = require("discord.js");
-const prefix = botconfig.prefix;
 
 const bot = new Discord.Client();
 
@@ -11,8 +10,15 @@ bot.on("ready", async () => {
 
 bot.on("message", async message => {
 
+  if(! message.content.startsWith(botconfig.prefix)) return; //if the msg does not starst with the prefix, ignore it
+  //if (message.author.bot) return; //if the author is a bot, ignore the msg.
+
   let args = message.content.slice(botconfig.prefix.length).trim().split(' ');
   let cmd = args.shift().toLowerCase();
+
+  //console.log(message.content);
+  //console.log(args);
+  //console.log(cmd);
 
   // This is the command handler
   try {
