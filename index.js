@@ -1,12 +1,16 @@
 const botconfig = require("./botconfig.json");
 const Discord = require("discord.js");
-const filesystem = require("fs");
+const fs = require("fs");
+const overwatch = require('overwatch-js');
+
+const leaderboard = require('./commands/leaderboard.js');
+var lbdata = require('./lbdata.json');
 
 const bot = new Discord.Client();
 bot.commands = new Discord.Collection();
 
 //Command Loader
-filesystem.readdir("./commands", (err, files) => {
+fs.readdir("./commands", (err, files) => {
   if(err) console.log(err);
 
   let jsfile = files.filter(f => f.split(".").pop() === "js");
@@ -15,16 +19,18 @@ filesystem.readdir("./commands", (err, files) => {
   jsfile.forEach((f, i=0) => {
     let aux = require(`./commands/${f}`);
     console.log(`${f} loaded!`);
-    bot.commands.set(aux.help.name, props);
+    bot.commands.set(aux.help.name, aux);
   });
 
   console.log(`${jsfile.length} command(s) loaded`);
 });
 
 //When the bots turns ready when turned on
-bot.on("ready", async () => {
-  console.log(`${bot.user.username} is online on ${bot.guilds.size} servers!`);
-  bot.user.setActivity("i'm learning");
+bot.on("ready", () => {
+  console.log(`${bot.user.username} is online on ${bot.guilds.size} server(s)! (more than 1 cause problems)`);
+  //bot.user.setActivity("I'm watching over you :eyes:");
+
+  updateLeaderboard();
 });
 
 //Every msg sent to the server
@@ -40,4 +46,65 @@ bot.on("message", async message => {
   if(commandFile) commandFile.run(bot, message, args);
 });
 
+bot.on("guildMemberRemove", async member => {
+  leaderboard.leaver(bot, member); //removes the player data
+});
+
 bot.login(botconfig.token);
+
+function updateLeaderboard() {
+  console.log('started updating');
+  if(lbdata.lbEnable) updateOvewatchData();
+  else console.log('the leaderboard is not enabled');
+
+  setTimeout(updateLeaderboard, 900000); //900000 = 15min | 3600000 = 1h
+}
+
+function updateOvewatchData(){
+
+  var owdata = JSON.parse(fs.readFileSync('owdata.json'));
+
+  var players = new Array();
+  var i=0;
+  for(p in owdata){
+    players[i] = p;
+    i++;
+  }
+
+  var processPlayers = function(x){
+    if(x < players.length) {
+
+      //console.log(owdata[players[x]].platform, owdata[players[x]].region,owdata[players[x]].battleTag);
+      //try {
+        overwatch.getOverall(owdata[players[x]].platform, owdata[players[x]].region,owdata[players[x]].battleTag).then((json) => {
+          console.log(owdata[players[x]].battleTag, json.profile.rank);
+          //console.log(json);
+          //if(!json) return console.log(owdata[players[x]].battleTag + 'has not been found');
+          owdata[players[x]].overwatch = {
+            rank: json.profile.rank
+          }
+          //saveData(owdata);
+          processPlayers(x+1);
+        });
+      //} catch (e) {
+        //console.log(`error autofetching profile ${owdata[players[x]].battleTag}\n` + e);
+      //} finally {
+
+      //  processPlayers(x+1);
+      //}
+    }else{
+      saveData(owdata);
+      console.log('Overwatch data updated successfuly');
+      leaderboard.update(bot);
+      console.log('Leaderboard updated succesfuly')
+    }
+  }
+  processPlayers(0);
+}
+
+function saveData (data) {
+  var rawdata = JSON.stringify(data, null, 2);
+  fs.writeFileSync('owdata.json', rawdata + '\n', (err) => {
+    if(err) console.log(err)
+  });
+}

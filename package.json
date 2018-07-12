@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/Zheoni/DiscordTestBot#readme",
   "dependencies": {
-    "discord.js": "^11.3.2"
+    "discord.js": "^11.3.2",
+    "overwatch-js": "^1.8.0"
   }
 }
