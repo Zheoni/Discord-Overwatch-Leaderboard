@@ -4,6 +4,7 @@ const fs = require("fs");
 const overwatch = require('overwatch-js');
 
 const leaderboard = require('./commands/leaderboard.js');
+//const unlinkow = require('./commands/unlinkow.js');
 var lbdata = require('./lbdata.json');
 
 const bot = new Discord.Client();
@@ -46,9 +47,11 @@ bot.on("message", async message => {
   if(commandFile) commandFile.run(bot, message, args);
 });
 
+/*
 bot.on("guildMemberRemove", async member => {
-  leaderboard.leaver(bot, member); //removes the player data
+  unlinkow.leaver(bot, member); //removes the player data
 });
+*/
 
 bot.login(botconfig.token);
 
@@ -74,24 +77,13 @@ function updateOvewatchData(){
   var processPlayers = function(x){
     if(x < players.length) {
 
-      //console.log(owdata[players[x]].platform, owdata[players[x]].region,owdata[players[x]].battleTag);
-      //try {
         overwatch.getOverall(owdata[players[x]].platform, owdata[players[x]].region,owdata[players[x]].battleTag).then((json) => {
           console.log(owdata[players[x]].battleTag, json.profile.rank);
-          //console.log(json);
-          //if(!json) return console.log(owdata[players[x]].battleTag + 'has not been found');
           owdata[players[x]].overwatch = {
             rank: json.profile.rank
           }
-          //saveData(owdata);
           processPlayers(x+1);
         });
-      //} catch (e) {
-        //console.log(`error autofetching profile ${owdata[players[x]].battleTag}\n` + e);
-      //} finally {
-
-      //  processPlayers(x+1);
-      //}
     }else{
       saveData(owdata);
       console.log('Overwatch data updated successfuly');

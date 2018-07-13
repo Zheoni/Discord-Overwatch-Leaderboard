@@ -1,21 +1,9 @@
 const Discord = require('discord.js');
 const fs = require('fs');
 
-var lbdata = require('../lbdata.json');
-
-module.exports.leaver = async (bot, member) => {
-  var owdata = JSON.parse(fs.readFileSync('../owdata.json'));
-  delete owdata[(member.id)];
-
-  var rawdata = JSON.stringify(owdata, null, 2);
-  fs.writeFile('owdata.json', rawdata, (err) => {
-    if(err) console.log(err)
-  });
-
-}
-
 module.exports.run = async (bot, message, args) => {
   var owdata = JSON.parse(fs.readFileSync('owdata.json'));
+  var lbdata = JSON.parse(fs.readFileSync('lbdata.json'));
 
   //This is for setting up the leaderboard in a channel
   if (args[0]){
@@ -29,9 +17,9 @@ module.exports.run = async (bot, message, args) => {
           lbEnable: true
       }
 
-      if(lbdata.lbMsgId) delete lbdata.lbMsgId;
+      //if(lbdata.lbMsgId) delete lbdata.lbMsgId;
 
-      saveData(lbdata);
+      //saveData(lbdata);
 
       message.reply('The leaderboard has been set to this channel.'
                           + 'If you delete the first leaderboard message, you'
@@ -42,19 +30,17 @@ module.exports.run = async (bot, message, args) => {
 
   if(message.channel.id==lbdata.lbChannel){
 
-    await showLeaderboard(bot, owdata, lbdata);
+    await saveData(lbdata);
+    await showLeaderboard(bot);
     message.delete(500);
 
   }else return message.reply('the leaderboard is not set up in this channel');
 
-  saveData(lbdata);
 
 }
 
 module.exports.update = (bot) => {
-  var rawdata = fs.readFileSync('owdata.json');
-  var owdata = JSON.parse(rawdata);
-  showLeaderboard(bot, owdata, lbdata);
+  showLeaderboard(bot);
 }
 
 module.exports.help = {
@@ -63,12 +49,14 @@ module.exports.help = {
 
 function saveData (data) {
   var rawdata = JSON.stringify(data, null, 2);
-  fs.writeFile('lbdata.json', rawdata, (err) => {
-    if(err) console.log(err)
+  fs.writeFileSync('lbdata.json', rawdata, (err) => {
+    if(err) console.log(err);
   });
 }
 
-function showLeaderboard(bot, owdata, lbdata){
+function showLeaderboard(bot){
+  var owdata = JSON.parse(fs.readFileSync('owdata.json'));
+  var lbdata = JSON.parse(fs.readFileSync('lbdata.json'));
   var board = new Array();
 
   for (p in owdata) {
@@ -118,8 +106,11 @@ function showLeaderboard(bot, owdata, lbdata){
       bot.guilds.get(lbdata.lbGuild).channels.get(lbdata.lbChannel).fetchMessage(lbdata.lbMsgId).then(msg => msg.edit({embed: embed}));
 
   }else{
-    bot.guilds.get(lbdata.lbGuild).channels.get(lbdata.lbChannel).send({embed: embed}).then((msg) => lbdata.lbMsgId = msg.id);
-  }
+    bot.guilds.get(lbdata.lbGuild).channels.get(lbdata.lbChannel).send({embed: embed}).then((msg) => {
+      lbdata.lbMsgId = msg.id;
+      saveData(lbdata);
+    });
 
+  }
 
 }
