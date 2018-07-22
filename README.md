@@ -13,9 +13,11 @@ prefix. Something like this:
 
 # How To
 Download this repository. Install node (this is tested with 8.11.3) and npm. Then use on a terminal, in the bot folder:
+
 `npm install`
 
 Then, for starting the bot use:
+
 `node index.js`
 
 ### Disclaimer
