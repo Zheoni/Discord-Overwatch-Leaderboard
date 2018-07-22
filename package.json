@@ -15,7 +15,7 @@
     "url": "git+https://github.com/Zheoni/DiscordTestBot.git"
   },
   "author": "Zheoni",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/Zheoni/DiscordTestBot/issues"
   },

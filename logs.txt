@@ -1,0 +1,3 @@
+-Make the command handler simpler and now I can have jsfiles that are not commands
+
+-Now use let instead of var, because.
