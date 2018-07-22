@@ -23,8 +23,12 @@ bot.on("message", async message => {
 
   let args = message.content.slice(botconfig.prefix.length).trim().split(' ');  //args is an array of the words after the command
   let cmd = args.shift().toLowerCase(); //cmd is the command executed (without the prefix)
-
-  let cmdfile = require(`./modules/${cmd}.js`);  //finds the command module
+  let cmdfile;
+  try {
+    cmdfile = require(`./modules/${cmd}.js`);  //finds the command module
+  } catch (error) {
+    return console.log('command ' + cmd + ' not found');
+  }
   if(cmdfile && cmdfile.help.command){           //if the module exist and its a command
     cmdfile.run(bot, message, args);                                    //execute it
     console.log(cmd + ' executed by ' + message.author.username);   //log it

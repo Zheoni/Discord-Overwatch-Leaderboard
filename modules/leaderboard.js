@@ -8,39 +8,43 @@ module.exports.run = async (bot, message, args) => {
 
   //This is for setting up the leaderboard in a channel
   if (args[0]){ //if the are an argument
-	if(args[0].toLowerCase() === 'set'){  //and is 'set'
-	  if(! message.member.hasPermission("ADMINISTRATOR")) return message.reply("you don't have permissions to do that.");
-	  //and the summoner is an admin, sets the leaderboard data
-	  lbdata = {
-		  guildName: message.guild.name,
-		  lbGuild: message.guild.id,
-		  lbChannel: message.channel.id,
-		  lbEnable: true
-	  }
+		if(args[0].toLowerCase() === 'enable'){  //and is 'set'
+		  if(! message.member.hasPermission("ADMINISTRATOR")) return message.reply("you don't have permissions to do that.");
+		  //and the summoner is an admin, sets the leaderboard data
+		  lbdata = {
+			  guildName: message.guild.name,
+			  lbGuild: message.guild.id,
+			  lbChannel: message.channel.id,
+			  lbEnable: true
+		  }
 
-	  //if(lbdata.lbMsgId) delete lbdata.lbMsgId;
+		  await functions.saveData(lbdata, 'lbdata.json');//and save it
 
-	  //saveData(lbdata);
-	  await functions.saveData(lbdata, 'lbdata.json');//and save it
+		  message.reply('The leaderboard has been set to this channel.'
+							  + 'If you delete the first leaderboard message, you'
+							  + 'will have yo set it up again. You can delete this one');
 
-	  message.reply('The leaderboard has been set to this channel.'
-						  + 'If you delete the first leaderboard message, you'
-						  + 'will have yo set it up again. You can delete this one');
-
-	}else return message.reply('that does nothing my friend.');
+		}else if(args[0].toLowerCase() === 'disable'){	//and is 'disable'
+			lbdata.lbEnable = false;								//disables it
+			functions.saveData(lbdata, 'lbdata.json');
+			return message.reply('The leaderboard has been disabled');
+		}else return message.reply('that does nothing my friend.');
   }
 
-  if(message.channel.id==lbdata.lbChannel){ //when the command is summoned in the correct channel
+  if( message.channel.id==lbdata.lbChannel && lbdata.lbEnable == true ){ //when the command is summoned in the correct channel and its enabled
 	
-	await showLeaderboard(bot); //shows the leaderboard
-	message.delete(500);  //and delete the msg
+		await update(bot); //shows the leaderboard
+		message.delete(500);  //and delete the msg
 
   }else return message.reply('the leaderboard is not set up in this channel');
   
   
 }
 
-module.exports.update = function (bot) {
+module.exports.update = bot => update(bot);
+
+
+function update(bot) {
 
 	let owdata = functions.loadData('owdata.json');
 
@@ -125,8 +129,14 @@ function showLeaderboard(bot){
   }
   embed.addBlankField();
   
-  if(lbdata.lbMsgId ){	//if there is a message
-	bot.guilds.get(lbdata.lbGuild).channels.get(lbdata.lbChannel).fetchMessage(lbdata.lbMsgId).then(msg => msg.edit({embed: embed})); //edit it
+	if(lbdata.lbMsgId){	//if there is a message
+
+		try {
+			bot.guilds.get(lbdata.lbGuild).channels.get(lbdata.lbChannel).fetchMessage(lbdata.lbMsgId).then(msg => msg.edit({embed: embed})); //edit it
+		} catch (error) {
+			console.error(error);
+			console.log('There was a problem finding the lb msg');
+		}
 	
   }else{	//else send a msg and add it to the lbdata
 	bot.guilds.get(lbdata.lbGuild).channels.get(lbdata.lbChannel).send({embed: embed}).then((msg) => {

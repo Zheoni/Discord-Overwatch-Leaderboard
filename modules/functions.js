@@ -1,3 +1,5 @@
+//Some generic functions user all around the code
+
 const fs = require('fs');
 
 module.exports.help = {
