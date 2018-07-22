@@ -7,7 +7,7 @@ module.exports.help = {
 
 module.exports.saveData = function (data, file) {
   let rawdata = JSON.stringify(data, null, 2);
-  fs.writeFileSync(file, rawdata + '\n \n', (err) => {
+  fs.writeFileSync(file, rawdata + '\n', (err) => {
     if(err) console.log(err)
   });
 }

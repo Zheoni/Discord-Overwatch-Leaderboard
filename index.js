@@ -1,6 +1,5 @@
 const botconfig = require("./botconfig.json");
 const Discord = require("discord.js");
-const overwatch = require("overwatch-js");
 
 const leaderboard = require('./modules/leaderboard.js');
 const functions = require('./modules/functions.js');
@@ -9,10 +8,10 @@ const bot = new Discord.Client();
 
 bot.login(botconfig.token); //login the bot with the token
 
-//When the bots turns ready when turned on
+//When the bot turns ready when turned on
 bot.on("ready", () => {
   console.log(`${bot.user.username} is online on ${bot.guilds.size} server(s)! (more than 1 cause problems)`);
-  bot.user.setActivity(`${botconfig.prefix}help 👀`);
+  bot.user.setActivity(`you -> ${botconfig.prefix}help 👀`, { type: 'WATCHING' });
   updateLeaderboard(); //start the updating routine
 });
 
@@ -32,11 +31,13 @@ bot.on("message", async message => {
   }
 });
 
-/*
+//When someone leaves the server
 bot.on("guildMemberRemove", async member => {
-  unlinkow.leaver(bot, member); //removes the player data
+  let owdata = functions.loadData('owdata.json');
+  if(owdata[member.id]) delete owdata[member.id]; //if the bot has data of the player, deletes it
+  functions.saveData(owdata, 'owdata.json');
+  console.log(`Deleted ${member.user.username} data, because he left the server`);
 });
-*/
 
 function updateLeaderboard() {
   console.log('started updating');
