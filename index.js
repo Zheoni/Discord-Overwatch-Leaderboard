@@ -44,10 +44,10 @@ bot.on("guildMemberRemove", async member => {
 });
 
 function updateLeaderboard() {
-  console.log('started updating');
-  let lbdata = functions.loadData('lbdata.json');
-  if(lbdata.lbEnable) leaderboard.update(bot);   //if the leaderboard is enabled, update the data
-  else console.log('the leaderboard is not enabled');
-
-  setTimeout(updateLeaderboard, 900000); //900000 = 15min | 3600000 = 1h
+  setInterval( () => {
+    console.log('started updating');
+    let lbdata = functions.loadData('lbdata.json');
+    if(lbdata.lbEnable) leaderboard.update(bot);   //if the leaderboard is enabled, update the data
+    else console.log('the leaderboard is not enabled');
+  }, 900000); //900000 = 15min | 3600000 = 1h
 }
