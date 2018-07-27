@@ -11,29 +11,28 @@ module.exports.run = async (bot, message, args) => {
 		if(args[0].toLowerCase() === 'enable'){  //and is 'set'
 		  if(! message.member.hasPermission("ADMINISTRATOR")) return message.reply("you don't have permissions to do that.");
 		  //and the summoner is an admin, sets the leaderboard data
-		  lbdata = {
+		  lbdata[message.guild.id] = {
 			  guildName: message.guild.name,
-			  lbGuild: message.guild.id,
 			  lbChannel: message.channel.id,
 			  lbEnable: true
 		  }
 
 		  await functions.saveData(lbdata, 'lbdata.json');//and save it
 
-		  message.reply('The leaderboard has been set to this channel.'
+		  await message.reply('The leaderboard has been set to this channel.'
 							  + 'If you delete the first leaderboard message, you'
 							  + 'will have yo set it up again. You can delete this one');
 
 		}else if(args[0].toLowerCase() === 'disable'){	//and is 'disable'
-			lbdata.lbEnable = false;								//disables it
-			functions.saveData(lbdata, 'lbdata.json');
+			lbdata[message.guild.id].lbEnable = false;								//disables it
+			await functions.saveData(lbdata, 'lbdata.json');
 			return message.reply('The leaderboard has been disabled');
 		}else return message.reply('that does nothing my friend.');
   }
 
-  if( message.channel.id==lbdata.lbChannel && lbdata.lbEnable == true ){ //when the command is summoned in the correct channel and its enabled
+  if( message.channel.id==lbdata[message.guild.id].lbChannel && lbdata[message.guild.id].lbEnable == true ){ //when the command is summoned in the correct channel and its enabled
 	
-		await update(bot); //shows the leaderboard
+		await update(bot, message.guild.id); //shows the leaderboard
 		message.delete(500);  //and delete the msg
 
   }else return message.reply('the leaderboard is not set up in this channel');
@@ -41,16 +40,16 @@ module.exports.run = async (bot, message, args) => {
   
 }
 
-module.exports.update = bot => update(bot);
+module.exports.update = (bot, serverid) => update(bot, serverid);
 
 
-function update(bot) {
+function update(bot, serverid) {
 
 	let owdata = functions.loadData('owdata.json');
 
 	let players = new Array();
 	let i = 0;
-	for (let p in owdata) {
+	for (let p in owdata[serverid]) {
 		players[i] = p;
 		i++;
 	}
@@ -58,10 +57,10 @@ function update(bot) {
 	var processPlayers = function (x) {
 		if (x < players.length) {
 
-			overwatch.getOverall(owdata[players[x]].platform, owdata[players[x]].region, owdata[players[x]].battleTag).then((json) => {
-				console.log(owdata[players[x]].battleTag, json.profile.rank);
+			overwatch.getOverall(owdata[serverid][players[x]].platform, owdata[serverid][players[x]].region, owdata[serverid][players[x]].battleTag).then((json) => {
+				console.log(owdata[serverid][players[x]].battleTag, json.profile.rank);
 
-				owdata[players[x]].overwatch = {
+				owdata[serverid][players[x]].overwatch = {
 					rank: json.profile.rank
 				}
 
@@ -70,7 +69,7 @@ function update(bot) {
 		} else {
 			functions.saveData(owdata, 'owdata.json');
 			console.log('Overwatch data updated successfuly');
-			showLeaderboard(bot);
+			showLeaderboard(bot, serverid);
 			console.log('Leaderboard updated succesfuly')
 		}
 	}
@@ -90,15 +89,15 @@ function newPerson (username, rank, btag) {
   };
 }
 
-function showLeaderboard(bot){
+function showLeaderboard(bot, serverid){
   let owdata = functions.loadData('owdata.json');
   let lbdata = functions.loadData('lbdata.json');
   let board = new Array();
 
-  for (let p in owdata) {
-	if(owdata[p].overwatch.rank){	//if they are ranked
-	  board.push(newPerson(owdata[p].username, owdata[p].overwatch.rank, owdata[p].battleTag)); //add the players to the leaderboard
-	}
+  for (let p in owdata[serverid]) {
+		if(owdata[serverid][p].overwatch.rank){	//if they are ranked
+		  board.push(newPerson(owdata[serverid][p].username, owdata[serverid][p].overwatch.rank, owdata[serverid][p].battleTag)); //add the players to the leaderboard
+		}
   }
   
   board.sort(function(a, b){return a.rank - b.rank}).reverse();		//sort the leadeboard
@@ -106,8 +105,8 @@ function showLeaderboard(bot){
   //console.log(board);
   
   let embed = new Discord.RichEmbed()	//create the embed and fill it
-  .setAuthor(`${bot.guilds.get(lbdata.lbGuild).name} Overwatch Leaderboard`, 'https://vignette.wikia.nocookie.net/overwatch/images/c/cc/Competitive_Grandmaster_Icon.png/revision/latest?cb=20161122023845')
-  .setColor('#f48642')
+  .setAuthor(`${bot.guilds.get(serverid)} Overwatch Leaderboard`, 'https://vignette.wikia.nocookie.net/overwatch/images/c/cc/Competitive_Grandmaster_Icon.png/revision/latest?cb=20161122023845')
+  .setColor('#F48642')
   .setTimestamp();
   
   let i;
@@ -129,18 +128,18 @@ function showLeaderboard(bot){
   }
   embed.addBlankField();
   
-	if(lbdata.lbMsgId){	//if there is a message
+	if(lbdata[serverid].lbMsgId){	//if there is a message
 
 		try {
-			bot.guilds.get(lbdata.lbGuild).channels.get(lbdata.lbChannel).fetchMessage(lbdata.lbMsgId).then(msg => msg.edit({embed: embed})); //edit it
+			bot.guilds.get(serverid).channels.get(lbdata[serverid].lbChannel).fetchMessage(lbdata[serverid].lbMsgId).then(msg => msg.edit({embed: embed})); //edit it
 		} catch (error) {
 			console.error(error);
 			console.log('There was a problem finding the lb msg');
 		}
 	
   }else{	//else send a msg and add it to the lbdata
-	bot.guilds.get(lbdata.lbGuild).channels.get(lbdata.lbChannel).send({embed: embed}).then((msg) => {
-	  lbdata.lbMsgId = msg.id;
+	bot.guilds.get(serverid).channels.get(lbdata[serverid].lbChannel).send({embed: embed}).then((msg) => {
+	  lbdata[serverid].lbMsgId = msg.id;
 	  functions.saveData(lbdata, 'lbdata.json');
 	});
 

@@ -1,3 +1,14 @@
 {
-  
+  "412088299029790720": {
+    "guildName": "test",
+    "lbChannel": "470702157998325774",
+    "lbEnable": true,
+    "lbMsgId": "472200846705426444"
+  },
+  "472201146484916224": {
+    "guildName": "Test2",
+    "lbChannel": "472201225392095233",
+    "lbEnable": true,
+    "lbMsgId": "472202112114229248"
+  }
 }
