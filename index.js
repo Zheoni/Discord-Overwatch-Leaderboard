@@ -11,7 +11,7 @@ bot.login(botconfig.token); //login the bot with the token
 //When the bot turns ready when turned on
 bot.on("ready", () => {
   console.log(`${bot.user.username} is online on ${bot.guilds.size} server(s)!`);
-  bot.user.setActivity(`you -> ${botconfig.prefix}help 👀`, { type: 'WATCHING' });
+  bot.user.setActivity(`over you -> ${botconfig.prefix}help 👀`, { type: 'WATCHING' });
   updateSequence(); //start the updating routine
 });
 
@@ -46,14 +46,14 @@ bot.on("guildMemberRemove", async member => {
 function updateSequence() {
 
   function updateLeaderboard(){
-    console.log('started updating');
     let lbdata = functions.loadData('lbdata.json');
-    for(let server in lbdata){
-      if(lbdata[server].lbEnable) leaderboard.update(bot, server);   //if the leaderboard is enabled, update the data
-      else console.log('the leaderboard is not enabled');
+    for(let serverid in lbdata){
+      console.log('started updating server id ' + serverid);
+      if(lbdata[serverid].lbEnable) leaderboard.update(bot, serverid);   //if the leaderboard is enabled, update the data
+      else console.log('the leaderboard is not enabled in ' + serverid);
     }
   }
 
   updateLeaderboard();
-  setInterval( updateLeaderboard, 900000); //900000 = 15min | 3600000 = 1h
+  setInterval( updateLeaderboard, 1200000); //900000 = 15min | 1200000 = 20min | 3600000 = 1h
 }
