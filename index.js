@@ -27,6 +27,7 @@ bot.on("message", async message => {
   try {
     cmdfile = require(`./modules/${cmd}.js`);  //finds the command module
   } catch (error) {
+    console.log(error);
     return console.log('command ' + cmd + ' not found');
   }
   if(cmdfile && cmdfile.help.command){           //if the module exist and its a command

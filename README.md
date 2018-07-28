@@ -16,6 +16,8 @@ Download this repository. Install node (this is tested with 8.11.3) and npm. The
 
 `npm install`
 
+Create the botconfig.json as shown before in this document.
+
 Then, for starting the bot use:
 
 `node index.js`

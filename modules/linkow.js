@@ -41,12 +41,14 @@ module.exports.run = async (bot, message, args) => {
     });
   } catch (err) {
     console.log(err);
-    return message.reply('The profile was not found... or some other weir error. Try later.');
+    return message.reply('The profile was not found... or some other weird error. Try again later.');
   }
 
 }
 
 module.exports.help = {
   name: "linkow",
-  command: true
+  command: true,
+  usage: "linkow  <platform: pc, xbox, psn>  <region: eu, us, asia>  <btag>",
+  description: "Links your overwatch rank to the bot and appear in the leaderboard. Use it again to change account if you want."
 }

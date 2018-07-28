@@ -13,5 +13,7 @@ module.exports.run = async (bot, message, args) => {
 
 module.exports.help = {
     name: 'unlinkow',
-    command: true
+    command: true,
+    usage: "unlinkow",
+    description: "Delete your data and you will no longer appear in the leaderboard."
 }

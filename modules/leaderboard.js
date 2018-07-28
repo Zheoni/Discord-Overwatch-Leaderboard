@@ -29,8 +29,10 @@ module.exports.run = async (bot, message, args) => {
 			return message.reply('The leaderboard has been disabled');
 		} else return message.reply('that does nothing my friend.');
 	}
-
-	if (message.channel.id == lbdata[message.guild.id].lbChannel && lbdata[message.guild.id].lbEnable == true) { //when the command is summoned in the correct channel and its enabled
+	
+	//when the command is summoned in the correct channel and its enabled
+	if (lbdata[message.guild.id] && 
+		message.channel.id == lbdata[message.guild.id].lbChannel && lbdata[message.guild.id].lbEnable == true) {
 
 		await update(bot, message.guild.id); //shows the leaderboard
 		message.delete(500);  //and delete the msg
@@ -77,7 +79,9 @@ function update(bot, serverid) {
 
 module.exports.help = {
 	name: "leaderboard",
-	command: true
+	command: true,
+	usage: "leaderboard	[enable/disable]",
+	description: "Enables or disables the leaderboard in the current channel. The leaderboard is updated every 20 minutes. With no arguments, just updates the leaderboard."
 }
 
 function newPerson(username, rank, btag) {

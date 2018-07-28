@@ -1,24 +1,52 @@
 //help command
 
 const Discord = require('discord.js');
-const botconfig = require('../botconfig.json')
+const botconfig = require('../botconfig.json');
+const fs = require('fs');
+
+let commands = {};
 
 module.exports.run = async (bot, message, args) => {
-  var embed = new Discord.RichEmbed()
-    .setAuthor(`${bot.user.username} help:`)
-    .setColor('#551A8B')
-    .addField(`${botconfig.prefix}linkow <platform: pc, xbox, psn>   <region: eu, us, asia>   <btag>`, 'Use this command to link your overwatch rank to the bot and appear in the leaderboard. Use it again to change account.')
-    .addBlankField()
-    .addField(`${botconfig.prefix}unlinkow`, 'Delete your data and you will no longer appear in the leaderboard')
-    .addBlankField()
-    .addField(`${botconfig.prefix}leaderboard <enable/disable>`, 'Places or removes the leaderboard in the current channel. The leaderboard is updated every 15 minutes.')
-    .addBlankField()
-    .addField(`${botconfig.prefix}leaderboard`, 'Just updates the leaderboard.');
-    
-  message.channel.send({embed: embed});
+
+  fs.readdir("./modules/", (err, files) => {
+    if (err) console.log(err);
+
+    let jsfiles = files.filter(f => f.split(".").pop() === "js");
+    if (jsfiles <= 0) return console.log("No commands found for help");
+
+    jsfiles.forEach((f) => {
+      let prop = require(`./${f}`);
+      if (prop.help.command == true){
+        let cmdinfo = {
+          usage: prop.help.usage,
+          description: prop.help.description
+        }
+        commands[prop.help.name] = cmdinfo;
+      } 
+    });
+
+    createandsendmsg();
+  });
+
+  
+  function createandsendmsg(){
+    let embed = new Discord.RichEmbed()
+      .setAuthor(`${bot.user.username} help:`)
+      .setTitle('Note: these < > are requiered, and these [ ] are optional.')
+      .setColor('#551A8B');
+  
+    for (let cmd in commands) {
+      embed.addField(botconfig.prefix + commands[cmd].usage, commands[cmd].description);
+      embed.addBlankField();
+    }
+  
+    message.channel.send({ embed: embed });
+  }
 }
 
 module.exports.help = {
   name: 'help',
-  command: true
+  command: true,
+  usage: 'help',
+  description: "This embed."
 }
