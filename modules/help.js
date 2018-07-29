@@ -4,7 +4,7 @@ const Discord = require('discord.js');
 const botconfig = require('../botconfig.json');
 const fs = require('fs');
 
-let commands = {};
+let commands = new Object();
 
 module.exports.run = async (bot, message, args) => {
 

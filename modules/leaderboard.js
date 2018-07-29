@@ -42,10 +42,10 @@ module.exports.run = async (bot, message, args) => {
 
 }
 
-module.exports.update = (bot, serverid) => update(bot, serverid);
+module.exports.update = (bot, serverid, callback) => update(bot, serverid, callback);
 
 
-function update(bot, serverid) {
+function update(bot, serverid, callback) {
 
 	let owdata = functions.loadData('owdata.json');
 
@@ -71,7 +71,7 @@ function update(bot, serverid) {
 		} else {
 			functions.saveData(owdata, 'owdata.json');
 			console.log('Overwatch data updated successfuly in server ' + serverid);
-			showLeaderboard(bot, serverid);
+			showLeaderboard(bot, serverid, callback);
 		}
 	}
 	processPlayers(0);
@@ -92,7 +92,7 @@ function newPerson(username, rank, btag) {
 	};
 }
 
-function showLeaderboard(bot, serverid) {
+function showLeaderboard(bot, serverid, callback) {
 	let owdata = functions.loadData('owdata.json');
 	let lbdata = functions.loadData('lbdata.json');
 	let board = new Array();
@@ -139,14 +139,15 @@ function showLeaderboard(bot, serverid) {
 			console.error(error);
 			console.log('There was a problem finding the lb msg');
 		}
+		callback();
 
 	} else {	//else send a msg and add it to the lbdata
 		bot.guilds.get(serverid).channels.get(lbdata[serverid].lbChannel).send({ embed: embed }).then((msg) => {
 			lbdata[serverid].lbMsgId = msg.id;
 			functions.saveData(lbdata, 'lbdata.json');
 		});
-
 	}
-
+	
 	console.log('Leaderboard updated succesfuly in server' + serverid);
+	callback();
 }
