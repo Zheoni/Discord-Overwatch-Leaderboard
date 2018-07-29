@@ -35,7 +35,7 @@ module.exports.run = async (bot, message, args) => {
 		message.channel.id == lbdata[message.guild.id].lbChannel && lbdata[message.guild.id].lbEnable == true) {
 
 		await update(bot, message.guild.id); //shows the leaderboard
-		message.delete(500);  //and delete the msg
+		return message.delete(500);  //and delete the msg
 
 	} else return message.reply('the leaderboard is not set up in this channel');
 
@@ -139,7 +139,6 @@ function showLeaderboard(bot, serverid, callback) {
 			console.error(error);
 			console.log('There was a problem finding the lb msg');
 		}
-		callback();
 
 	} else {	//else send a msg and add it to the lbdata
 		bot.guilds.get(serverid).channels.get(lbdata[serverid].lbChannel).send({ embed: embed }).then((msg) => {
@@ -149,5 +148,6 @@ function showLeaderboard(bot, serverid, callback) {
 	}
 	
 	console.log('Leaderboard updated succesfuly in server' + serverid);
-	callback();
+
+	if(callback) callback(); //if theres a callback, run it
 }
