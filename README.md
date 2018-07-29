@@ -23,4 +23,4 @@ Then, for starting the bot use:
 `node index.js`
 
 ### Disclaimer
-This is just a little project, probably there are errors. The data is not protected in any way, its just in a json file in the bot folder. If I can get a way to host the bot I'll post here a link to add it to your server, until then, you have to host it. THE BOT ONLY WORKS IN 1 SERVER, in more than 1 is not tested and not intended to work at all.
+This is just a little project, probably there are errors. The data is not protected in any way, its just in a json file in the bot folder. I cannot afford to host the bot for all of you, you have to host it. The bot is not tested working in many server at the same time.
