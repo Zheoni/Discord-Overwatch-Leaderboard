@@ -35,17 +35,17 @@ module.exports.run = async (bot, message, args) => {
 		message.channel.id == lbdata[message.guild.id].lbChannel && lbdata[message.guild.id].lbEnable == true) {
 
 		await update(bot, message.guild.id); //shows the leaderboard
-		message.delete(500);  //and delete the msg
+		return message.delete(500);  //and delete the msg
 
 	} else return message.reply('the leaderboard is not set up in this channel');
 
 
 }
 
-module.exports.update = (bot, serverid) => update(bot, serverid);
+module.exports.update = (bot, serverid, callback) => update(bot, serverid, callback);
 
 
-function update(bot, serverid) {
+function update(bot, serverid, callback) {
 
 	let owdata = functions.loadData('owdata.json');
 
@@ -71,7 +71,7 @@ function update(bot, serverid) {
 		} else {
 			functions.saveData(owdata, 'owdata.json');
 			console.log('Overwatch data updated successfuly in server ' + serverid);
-			showLeaderboard(bot, serverid);
+			showLeaderboard(bot, serverid, callback);
 		}
 	}
 	processPlayers(0);
@@ -92,7 +92,7 @@ function newPerson(username, rank, btag) {
 	};
 }
 
-function showLeaderboard(bot, serverid) {
+function showLeaderboard(bot, serverid, callback) {
 	let owdata = functions.loadData('owdata.json');
 	let lbdata = functions.loadData('lbdata.json');
 	let board = new Array();
@@ -145,8 +145,9 @@ function showLeaderboard(bot, serverid) {
 			lbdata[serverid].lbMsgId = msg.id;
 			functions.saveData(lbdata, 'lbdata.json');
 		});
-
 	}
-
+	
 	console.log('Leaderboard updated succesfuly in server' + serverid);
+
+	if(callback) callback(); //if theres a callback, run it
 }
