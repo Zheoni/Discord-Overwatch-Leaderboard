@@ -29,9 +29,9 @@ module.exports.run = async (bot, message, args) => {
 			return message.reply('The leaderboard has been disabled');
 		} else return message.reply('that does nothing my friend.');
 	}
-	
+
 	//when the command is summoned in the correct channel and its enabled
-	if (lbdata[message.guild.id] && 
+	if (lbdata[message.guild.id] &&
 		message.channel.id == lbdata[message.guild.id].lbChannel && lbdata[message.guild.id].lbEnable == true) {
 
 		await update(bot, message.guild.id); //shows the leaderboard
@@ -58,16 +58,22 @@ function update(bot, serverid, callback) {
 
 	var processPlayers = function (x) {
 		if (x < players.length) {
+			try {
+				overwatch.getOverall(owdata[serverid][players[x]].platform, owdata[serverid][players[x]].region, owdata[serverid][players[x]].battleTag).then((json) => {
+					console.log(owdata[serverid][players[x]].battleTag, json.profile.rank);
 
-			overwatch.getOverall(owdata[serverid][players[x]].platform, owdata[serverid][players[x]].region, owdata[serverid][players[x]].battleTag).then((json) => {
-				console.log(owdata[serverid][players[x]].battleTag, json.profile.rank);
-
-				owdata[serverid][players[x]].overwatch = {
-					rank: json.profile.rank
+					owdata[serverid][players[x]].overwatch = {
+						rank: json.profile.rank
+					}
+					processPlayers(x + 1);
+				});
+			} catch (error) {
+				if (error) {
+					console.log(error);
+					console.log('Problem fetching player ' + players[x] + ' in server ' + serverid);
+					processPlayers(x+1);
 				}
-
-				processPlayers(x + 1);
-			});
+			}
 		} else {
 			functions.saveData(owdata, 'owdata.json');
 			console.log('Overwatch data updated successfuly in server ' + serverid);
@@ -146,8 +152,8 @@ function showLeaderboard(bot, serverid, callback) {
 			functions.saveData(lbdata, 'lbdata.json');
 		});
 	}
-	
+
 	console.log('Leaderboard updated succesfuly in server' + serverid);
 
-	if(callback) callback(); //if theres a callback, run it
+	if (callback) callback(); //if theres a callback, run it
 }

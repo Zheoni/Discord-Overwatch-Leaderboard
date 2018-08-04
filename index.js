@@ -6,7 +6,7 @@ const functions = require('./modules/functions.js');
 
 const bot = new Discord.Client();
 
-const updateTime = 1200000 //900000 = 15min | 1200000 = 20min | 3600000 = 1h
+const updateTime = 60000 //900000 = 15min | 1200000 = 20min | 3600000 = 1h
 const commandUpdaterTime = 250
 
 let commandsQueue = new Array();
@@ -52,7 +52,17 @@ bot.on("guildMemberRemove", async function deleteMember(member) {
   ready = false;
   let owdata = functions.loadData('owdata.json');
   //if the bot has data of the player, deletes it
-  if (owdata[member.guild.id][member.id]) delete owdata[member.guild.id][member.id];
+  try {
+    if (owdata[member.guild.id]){
+      if (owdata[member.guild.id][member.id]){
+        delete owdata[member.guild.id][member.id];
+      }
+    } 
+  } catch (err) {
+    if(err){
+      ready = true;
+    } console.log(err);
+  }
   functions.saveData(owdata, 'owdata.json');
   console.log(`Deleted ${member.user.username} data, because he left the server ${member.guild.name}`);
   ready = true;
@@ -67,8 +77,15 @@ bot.on("guildDelete", async function deleteGuild(guild) {
   let owdata = functions.loadData('owdata.json');
   let lbdata = functions.loadData('lbdata.json');
   let id = guild.id;
-  if(owdata[id]) delete owdata[id];
-  if(lbdata[id]) delete lbdata[id];
+  try {
+    if(owdata[id]) delete owdata[id];
+    if(lbdata[id]) delete lbdata[id];
+  } catch (err) {
+    if(err){
+      console.log(err);
+      ready = true;
+    }
+  }
   functions.saveData(owdata, 'owdata.json');
   functions.saveData(lbdata, 'lbdata.json');
   ready = true;
