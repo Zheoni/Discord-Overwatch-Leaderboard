@@ -45,13 +45,35 @@ bot.on("message", async message => {
 });
 
 //When someone leaves the server
-bot.on("guildMemberRemove", async member => {
+bot.on("guildMemberRemove", async function deleteMember(member) {
+  if (ready == false) { //if the data is being used, try later
+    setTimeout(() => deleteMember(member), 1000);
+  }
+  ready = false;
   let owdata = functions.loadData('owdata.json');
   //if the bot has data of the player, deletes it
   if (owdata[member.guild.id][member.id]) delete owdata[member.guild.id][member.id];
   functions.saveData(owdata, 'owdata.json');
   console.log(`Deleted ${member.user.username} data, because he left the server ${member.guild.name}`);
+  ready = true;
 });
+
+//When a guild id left/deleted
+bot.on("guildDelete", async function deleteGuild(guild) {
+  if(ready == false){ //if the data is being used, try later
+    setTimeout(() => deleteGuild(guild), 1000);
+  }
+  ready = false;
+  let owdata = functions.loadData('owdata.json');
+  let lbdata = functions.loadData('lbdata.json');
+  let id = guild.id;
+  if(owdata[id]) delete owdata[id];
+  if(lbdata[id]) delete lbdata[id];
+  functions.saveData(owdata, 'owdata.json');
+  functions.saveData(lbdata, 'lbdata.json');
+  ready = true;
+  console.log(`Left the server ${guild.name} and deleted its data`);
+})
 
 function updateSequence() {
   console.log('Started auto-update loop:');
