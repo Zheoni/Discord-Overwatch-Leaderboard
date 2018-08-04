@@ -25,9 +25,13 @@ module.exports.run = async (bot, message, args) => {
         }
       }
 
+      //console.log(data);
+
       addPlayer(player);
+
+      let embed = createEmbed(data);
       
-      message.reply(`You linked "${btag.replace("-", "#")}" in "${platform}" in "${region}" to your discord accounthis bot. If it  is not correct, try the command again.`);
+      message.reply({embed:embed});
       
       console.log(`linkow success: ${btag} ${message.author.username}  ${data.profile.rank}sr`);
     });
@@ -56,4 +60,15 @@ module.exports.help = {
   command: true,
   usage: "linkow  <platform: pc, xbox, psn>  <region: eu, us, asia>  <btag>",
   description: "Links your overwatch rank to the bot and appear in the leaderboard. Use it again to change account if you want."
+}
+
+function createEmbed(data) {
+  let embed = new Discord.RichEmbed()
+    .setAuthor(data.profile.nick, data.profile.rankPicture)
+    .setThumbnail(data.profile.avatar)
+    .setDescription('You linked your ow profile with the bot, in the next leaderboard update you will appear with' + 
+      ' a rank of **' + data.profile.rank + '**')
+    .addField('Note:','If you want to change the linked account, run the command again')
+    .addField('All stats:', `Click [here](${data.profile.url})`);
+  return embed;
 }
