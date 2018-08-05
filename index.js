@@ -6,7 +6,7 @@ const functions = require('./modules/functions.js');
 
 const bot = new Discord.Client();
 
-const updateTime = 60000 //900000 = 15min | 1200000 = 20min | 3600000 = 1h
+const updateTime = 1200000 //900000 = 15min | 1200000 = 20min | 3600000 = 1h
 const commandUpdaterTime = 250
 
 let commandsQueue = new Array();
