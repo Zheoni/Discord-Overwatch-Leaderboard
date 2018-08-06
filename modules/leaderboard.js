@@ -64,22 +64,18 @@ function update(bot, serverid, callback) {
 
 	function processPlayers(x) {
 		if (x < players.length) {
-			try {
-				overwatch.getOverall(owdata[serverid][players[x]].platform, owdata[serverid][players[x]].region, owdata[serverid][players[x]].battleTag).then((json) => {
-					console.log(owdata[serverid][players[x]].battleTag, json.profile.rank);
+			overwatch.getOverall(owdata[serverid][players[x]].platform, owdata[serverid][players[x]].region, owdata[serverid][players[x]].battleTag).then((json) => {
+				console.log(owdata[serverid][players[x]].battleTag, json.profile.rank);
 
-					owdata[serverid][players[x]].overwatch = {
-						rank: json.profile.rank
-					}
-					processPlayers(x + 1);
-				});
-			} catch (error) {
-				if (error) {
-					console.log(error);
-					console.log('Problem fetching player ' + players[x] + ' in server ' + serverid);
-					processPlayers(x + 1);
+				owdata[serverid][players[x]].overwatch = {
+					rank: json.profile.rank
 				}
-			}
+				processPlayers(x + 1);
+			}).catch((error) => {
+				console.error(error);
+				console.log('Problem fetching player ' + players[x] + ' in server ' + serverid);
+				processPlayers(x + 1);
+			});
 		} else {
 			functions.saveData(owdata, 'owdata.json');
 			console.log('Overwatch data updated successfuly in server ' + serverid);
