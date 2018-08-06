@@ -8,8 +8,8 @@ module.exports.run = async (bot, message, args) => {
 
 	//This is for setting up the leaderboard in a channel
 	if (args[0]) { //if the are an argument
+		if (!message.member.hasPermission("ADMINISTRATOR")) return message.reply("you don't have permissions to do that.");
 		if (args[0].toLowerCase() === 'enable') {  //and is 'set'
-			if (!message.member.hasPermission("ADMINISTRATOR")) return message.reply("you don't have permissions to do that.");
 			//and the summoner is an admin, sets the leaderboard data
 			lbdata[message.guild.id] = {
 				guildName: message.guild.name,
@@ -72,7 +72,8 @@ function update(bot, serverid, callback) {
 				}
 				processPlayers(x + 1);
 			}).catch((error) => {
-				console.error(error);
+				console.error
+				(error);
 				console.log('Problem fetching player ' + players[x] + ' in server ' + serverid);
 				processPlayers(x + 1);
 			});
