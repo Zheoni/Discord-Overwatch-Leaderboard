@@ -3,9 +3,12 @@ const overwatch = require('overwatch-js');
 const functions = require("./functions.js");
 
 module.exports.run = async (bot, message, args) => {
-  const platform = args[0].toLowerCase();
-  const region = args[1].toLowerCase();
-  const btag = args[2].replace("#", "-");
+  let platform, region, btag;
+  if(args[0] && args[1] && args[2]){
+    platform = args[0].toLowerCase();
+    region = args[1].toLowerCase();
+    btag = args[2].replace("#", "-");
+  }else return await message.reply("Make sure you follow thr scheme !linkow <platflom> <region> <btag>");
 
   //verify the args
   if (platform != 'pc') return await message.reply("Sorry, the bot only support 'pc' player at this moment."); //because
