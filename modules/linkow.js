@@ -35,7 +35,7 @@ module.exports.run = async (bot, message, args) => {
 		
 		message.reply({embed:embed});
 		
-		console.log(`linkow success: ${btag} ${message.author.username}  ${data.profile.rank}sr`);
+		console.log(`linkow success: ${btag} ${message.author.username}  ${data.rating}sr`);
 	} catch (err) {
 		console.log(err);
 		return message.reply('The profile was not found... or some other weird error. Try again later.');
