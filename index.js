@@ -92,6 +92,8 @@ bot.on("guildDelete", async function deleteGuild(guild) {
   console.log(`Left the server ${guild.name} and deleted its data`);
 })
 
+bot.on("error", error => console.error(error));
+
 function updateSequence() {
   console.log('Started auto-update loop:');
   let servers;

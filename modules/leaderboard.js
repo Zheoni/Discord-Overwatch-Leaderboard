@@ -1,5 +1,5 @@
 const Discord = require('discord.js');
-const overwatch = require('overwatch-js');
+const fetch = require('node-fetch');
 
 const functions = require('./functions.js');
 
@@ -62,21 +62,22 @@ function update(bot, serverid, callback) {
 		i++;
 	}
 
-	function processPlayers(x) {
+	async function processPlayers(x) {
 		if (x < players.length) {
-			overwatch.getOverall(owdata[serverid][players[x]].platform, owdata[serverid][players[x]].region, owdata[serverid][players[x]].battleTag).then((json) => {
-				console.log(owdata[serverid][players[x]].battleTag, json.profile.rank);
+			try {
+				let link = `https://ow-api.com/v1/stats/${owdata[serverid][players[x]].platform}/${owdata[serverid][players[x]].region}/${owdata[serverid][players[x]].battleTag}/profile`;
+				
+				let data = await fetch(link).then((response) => response.json());
+				console.log(owdata[serverid][players[x]].battleTag, data.rating);
 
-				owdata[serverid][players[x]].overwatch = {
-					rank: json.profile.rank
-				}
+				if(data.rating != 0) owdata[serverid][players[x]].overwatch = { rank: data.rating };
+				else owdata[serverid][players[x]].overwatch = { rank: null };
 				processPlayers(x + 1);
-			}).catch((error) => {
-				console.error
-				(error);
+			} catch (error) {
+				console.error(error);
 				console.log('Problem fetching player ' + players[x] + ' in server ' + serverid);
 				processPlayers(x + 1);
-			});
+			}
 		} else {
 			functions.saveData(owdata, 'owdata.json');
 			console.log('Overwatch data updated successfuly in server ' + serverid);
@@ -115,7 +116,7 @@ function showLeaderboard(bot, serverid, callback) {
 		.setColor('#F48642')
 		.setTimestamp();
 
-	let i;
+	let i, fieldName;
 	for (i = 0; i < board.length; i++) {
 		switch (i) {
 			case 0:
