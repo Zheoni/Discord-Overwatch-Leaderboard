@@ -65,7 +65,7 @@ function update(bot, serverid, callback) {
 	async function processPlayers(x) {
 		if (x < players.length) {
 			try {
-				let link = `https://ow-api.com/v1/stats/${owdata[serverid][players[x]].platform}/${owdata[serverid][players[x]].region}/${owdata[serverid][players[x]].battleTag}/profile`;
+				let link = `http://ovrstat.com/stats/${owdata[serverid][players[x]].platform}/${owdata[serverid][players[x]].region}/${owdata[serverid][players[x]].battleTag}`;
 				
 				let data = await fetch(link).then((response) => response.json());
 				console.log(owdata[serverid][players[x]].battleTag, data.rating);

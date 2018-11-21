@@ -14,7 +14,7 @@ module.exports.run = async (bot, message, args) => {
 	if (platform != 'pc') return await message.reply("Sorry, the bot only support 'pc' player at this moment."); //because
 	if (region != "eu" && region != "us" && region != "asia") return await message.reply("The region must be: 'eu', 'us' or 'asia'.");
 
-	const link = `https://ow-api.com/v1/stats/${platform}/${region}/${btag}/profile`;
+	const link = `http://ovrstat.com/stats/${platform}/${region}/${btag}`;
 	
 	//aks the api for the data
 	try {
