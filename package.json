@@ -22,6 +22,8 @@
   "homepage": "https://github.com/Zheoni/DiscordTestBot#readme",
   "dependencies": {
     "discord.js": "^11.3.2",
-    "node-fetch": "^2.3.0"
+    "node-fetch": "^2.3.0",
+    "sequelize": "^4.42.1",
+    "sqlite3": "^4.0.6"
   }
 }

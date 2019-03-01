@@ -55,7 +55,7 @@ function update(bot, serverid, callback) {
 
 	let owdata = functions.loadData('owdata.json');
 
-	let players = new Array();
+	let players = [];
 	let i = 0;
 	for (let p in owdata[serverid]) {
 		players[i] = p;

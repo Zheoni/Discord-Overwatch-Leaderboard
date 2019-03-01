@@ -6,8 +6,8 @@ const functions = require('./modules/functions.js');
 
 const bot = new Discord.Client();
 
-const updateTime = 1200000 //900000 = 15min | 1200000 = 20min | 3600000 = 1h
-const commandUpdaterTime = 250
+const updateTime = 1200000; //900000 = 15min | 1200000 = 20min | 3600000 = 1h
+const commandUpdaterTime = 250;
 
 let commandsQueue = new Array();
 let ready = true;
@@ -15,7 +15,7 @@ let ready = true;
 bot.login(botconfig.token); //login the bot with the token
 
 //When the bot turns ready when turned on
-bot.on("ready", () => {
+bot.once("ready", () => {
   console.log(`${bot.user.username} is online on ${bot.guilds.size} server(s)!`);
   bot.user.setActivity(`over you -> ${botconfig.prefix}help 👀`, { type: 'WATCHING' });
   updateSequence(); //start the updating routine

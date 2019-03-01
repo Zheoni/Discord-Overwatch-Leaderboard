@@ -17,11 +17,12 @@ module.exports.run = async (bot, message, args) => {
 	const link = `http://ovrstat.com/stats/${platform}/${region}/${btag}`;
 	
 	//aks the api for the data
+
 	try {
 		let data = await fetch(link).then((response) => response.json());
 		//create the player
 		let player = {
-			username: message.author.username,
+			username: message.author.tag,
 			platform: platform,
 			region: region,
 			battleTag: btag,
