@@ -1,7 +1,13 @@
 module.exports = (sequelize, DataTypes) => {
-    sequelize.define('leaderboards', {
-        guild_id: DataTypes.STRING,
-        btag: DataTypes.STRING,
+    return sequelize.define('leaderboards', {
+        guild_id: {
+            type: DataTypes.STRING,
+            primaryKey: true
+        },
+        btag: {
+            type: DataTypes.STRING,
+            primaryKey: true
+        },
         username: DataTypes.STRING
     }, {
             timestamps: false

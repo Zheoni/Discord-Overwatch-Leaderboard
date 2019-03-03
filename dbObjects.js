@@ -11,7 +11,6 @@ const Accounts = sequelize.import('models/Accounts.js');
 const Leaderboards = sequelize.import('models/Leaderboards.js');
 const Servers = sequelize.import('models/Servers.js');
 
-Leaderboards.belongsTo(Servers, { foreignKey: 'guild_id', as: 'guild' });
-Leaderboards.belongsTo(Accounts, { foreignKey: 'btag', as: 'btag' });
+Leaderboards.belongsTo(Accounts, { foreignKey: 'btag', as: 'account' });
 
 module.exports = { Accounts, Leaderboards, Servers };

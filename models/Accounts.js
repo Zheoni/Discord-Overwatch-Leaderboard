@@ -1,6 +1,6 @@
 module.exports = (sequelize, DataTypes) => {
-    sequelize.define('accounts', {
-        btag: {
+    return sequelize.define('accounts', {
+        battleTag: {
             type: DataTypes.STRING,
             primaryKey: true
         },

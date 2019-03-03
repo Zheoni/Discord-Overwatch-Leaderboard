@@ -4,8 +4,8 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING,
             primaryKey: true
         },
-        servername: DataTypes.STRING,
         lbEnable: DataTypes.BOOLEAN,
+        lbChannel: DataTypes.STRING,
         lbMsgId: DataTypes.STRING,
         lbAllowMultiple: {
             type: DataTypes.BOOLEAN,
