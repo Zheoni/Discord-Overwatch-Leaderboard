@@ -39,12 +39,10 @@ module.exports.run = async (bot, message, args) => {
 			return guild.lbAllowMultiple;
 		});
 		
-		const count = await Leaderboards.findAndCount({where: {
+		const count = await Leaderboards.count({where: {
 			guild_id: message.guild.id,
 			user_id: message.author.id,
-		}}).then((result) => {
-			return result.count;
-		});
+		}});
 
 		if(count == 0 || canMultiple) {
 			Accounts.upsert({
