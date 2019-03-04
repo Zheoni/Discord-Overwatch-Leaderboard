@@ -1,5 +1,5 @@
 const Discord = require('discord.js');
-const fetch = require('node-fetch');
+const api = require("../overwatchData");
 
 const { Accounts, Leaderboards, Servers } = require("../dbObjects");
 
@@ -51,16 +51,16 @@ module.exports.run = async (bot, message, args) => {
 	}
 }
 
-module.exports.update = async () => {
+module.exports.update = async function () {
 	const players = await Accounts.findAll();
 	for (let i = 0; i < players.length; i++) {
-		const link = `http://ovrstat.com/stats/${players[i].platform}/${players[i].region}/${players[i].battleTag}`;
-		fetch(link).then(async (response) => {
-			const data = await response.json();
-			//console.log(data);
+		api.fetchAPI(players[i].battleTag, players[i].platform, players[i].region).then((data) => {	
 			console.log(players[i].battleTag, data.rating);
 			Accounts.update({ rank: data.rating }, { where: { battleTag: players[i].battleTag } });
-		}).catch(console.error);
+		}).catch((error) => {
+			console.error(error);
+			console.log("Cannot fetch " + players[i].battleTag);
+		});
 	}
 };
 
