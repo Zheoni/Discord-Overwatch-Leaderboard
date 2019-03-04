@@ -17,13 +17,16 @@ module.exports.run = async (bot, message, args) => {
 		return await message.reply("The region must be: 'eu', 'us' or 'asia'.");
 
 	//aks the api for the data
-	const data = await api.fetchAPI(btag, platform, region).then((data) => {
-		return data;
-	}).catch((error) => {
+	let data;
+	try {
+		data = await api.fetchAPI(btag, platform, region).then((data) => {
+			return data;
+		});
+	} catch (error) {
 		console.error(error);
-		console.log("Cannot fetch " + players[i].battleTag);
+		console.log("Cannot fetch " + btag);
 		return message.reply('The profile was not found... or some other weird error. Try again later.');
-	});
+	}
 
 	const added = await addPlayer(btag, platform, region, data.rating);
 	if (added) {
@@ -66,9 +69,9 @@ module.exports.run = async (bot, message, args) => {
 }
 
 module.exports.help = {
-	name: "linkow",
+	name: "addAccount",
 	command: true,
-	usage: "linkow  <platform: pc, xbox, psn>  <region: eu, us, asia>  <btag>",
+	usage: "addAccount  [platform: pc, xbox, psn]  [region: eu, us, asia]  [BattleTag]",
 	description: "Links your overwatch rank to the bot and appear in the leaderboard. Use it again to change account if you want."
 }
 
@@ -78,6 +81,5 @@ function createEmbed(data) {
 		.setThumbnail(data.icon)
 		.setDescription('You linked your ow profile with the bot, in the next leaderboard update you will appear with' +
 			' a rank of **' + data.rating + '**')
-		.addField('Note:', 'If you want to change the linked account, run the command again')
 	return embed;
 }

@@ -90,8 +90,7 @@ async function showLeaderboard(bot, serverid) {
 			include: ['account']
 		});
 		for (let i = 0; i < players.length; i++) {
-			console.log(players[i].btag, players[i].account.rank);
-			if (players[i].account.rank != 0) {
+			if (players[i].account.rank != 0 && players[i].account.rank != null) {
 				const entry = newPerson(players[i].username,
 					players[i].account.rank,
 					players[i].btag);

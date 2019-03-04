@@ -65,8 +65,8 @@ module.exports.run = async (bot, message, args) => {
 }
 
 module.exports.help = {
-    name: 'unlinkow',
+    name: 'removeAccount',
     command: true,
-    usage: "unlinkow [battletag]; or: unlinkow all",
+    usage: "removeAccount [battletag]; or: removeAccount all",
     description: "Delete your data and you will no longer appear in the leaderboard."
 }
