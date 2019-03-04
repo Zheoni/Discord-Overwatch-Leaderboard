@@ -4,10 +4,12 @@ const { Accounts, Leaderboards } = require("../dbObjects");
 module.exports.run = async (bot, message, args) => {
     if (args[0]) {
         if (args[0] === "all") {
-            Leaderboards.findAll({where: {
-                guild_id: message.guild.id,
-                user_id: message.author.id,
-            }}).then((entries) => {
+            Leaderboards.findAll({
+                where: {
+                    guild_id: message.guild.id,
+                    user_id: message.author.id,
+                }
+            }).then((entries) => {
                 for (let i = 0; i < entries.length; i++) {
                     const btag = entries[i].btag;
                     deleteBtag(btag).then(() => {
@@ -36,18 +38,23 @@ module.exports.run = async (bot, message, args) => {
     } else return message.reply(usage);
 
     function deleteBtag(btag) {
-        return Leaderboards.destroy({where: {
-            guild_id: message.guild.id,
-            user_id: message.author.id,
-            btag: btag
-        }});
+        return Leaderboards.destroy({
+            where: {
+                guild_id: message.guild.id,
+                user_id: message.author.id,
+                btag: btag
+            }
+        });
     }
     function tryDeleteAccount(btag) {
-        Leaderboards.count({where: {
-            btag: btag
-        }}).then((count) => {
+        Leaderboards.count({
+            where: {
+                btag: btag
+            }
+        }).then((count) => {
             if (count == 0) {
-                Accounts.destroy({where: {
+                Accounts.destroy({
+                    where: {
                         battleTag: btag
                     }
                 });

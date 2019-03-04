@@ -16,30 +16,30 @@ module.exports.run = async (bot, message, args) => {
 
     jsfiles.forEach((f) => {
       let prop = require(`./${f}`);
-      if (prop.help.command == true){
+      if (prop.help.command == true) {
         let cmdinfo = {
           usage: prop.help.usage,
           description: prop.help.description
         }
         commands[prop.help.name] = cmdinfo;
-      } 
+      }
     });
 
     createandsendmsg();
   });
 
-  
-  function createandsendmsg(){
+
+  function createandsendmsg() {
     let embed = new Discord.RichEmbed()
       .setAuthor(`${bot.user.username} help:`)
       .setTitle('Note: these < > are requiered, and these [ ] are optional.')
       .setColor('#551A8B');
-  
+
     for (let cmd in commands) {
       embed.addField(botconfig.prefix + commands[cmd].usage, commands[cmd].description);
       embed.addBlankField();
     }
-  
+
     message.channel.send({ embed: embed });
   }
 }

@@ -54,7 +54,7 @@ module.exports.run = async (bot, message, args) => {
 module.exports.update = async function () {
 	const players = await Accounts.findAll();
 	for (let i = 0; i < players.length; i++) {
-		api.fetchAPI(players[i].battleTag, players[i].platform, players[i].region).then((data) => {	
+		api.fetchAPI(players[i].battleTag, players[i].platform, players[i].region).then((data) => {
 			console.log(players[i].battleTag, data.rating);
 			Accounts.update({ rank: data.rating }, { where: { battleTag: players[i].battleTag } });
 		}).catch((error) => {
@@ -95,7 +95,7 @@ async function showLeaderboard(bot, serverid) {
 				const entry = newPerson(players[i].username,
 					players[i].account.rank,
 					players[i].btag);
-					board.push(entry);
+				board.push(entry);
 			}
 		}
 	}

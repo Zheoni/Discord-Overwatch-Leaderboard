@@ -24,7 +24,7 @@ module.exports.run = async (bot, message, args) => {
 		console.log("Cannot fetch " + players[i].battleTag);
 		return message.reply('The profile was not found... or some other weird error. Try again later.');
 	});
-	
+
 	const added = await addPlayer(btag, platform, region, data.rating);
 	if (added) {
 		let embed = createEmbed(data);
@@ -33,18 +33,20 @@ module.exports.run = async (bot, message, args) => {
 	} else {
 		await message.reply("The leaderboard does not allow multiple accounts, ask your server admind to change that.");
 	}
-	
+
 	async function addPlayer(btag, platform, region, rank) {
 		const canMultiple = await Servers.findByPk(message.guild.id).then((guild) => {
 			return guild.lbAllowMultiple;
 		});
-		
-		const count = await Leaderboards.count({where: {
-			guild_id: message.guild.id,
-			user_id: message.author.id,
-		}});
 
-		if(count == 0 || canMultiple) {
+		const count = await Leaderboards.count({
+			where: {
+				guild_id: message.guild.id,
+				user_id: message.author.id,
+			}
+		});
+
+		if (count == 0 || canMultiple) {
 			Accounts.upsert({
 				battleTag: btag,
 				platform: platform,
