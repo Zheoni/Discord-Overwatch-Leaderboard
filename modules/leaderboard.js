@@ -143,3 +143,5 @@ async function showLeaderboard(bot, serverid) {
 
 	console.log('Leaderboard updated succesfuly in server ' + serverid);
 }
+
+module.exports.showLeaderboard = showLeaderboard;
