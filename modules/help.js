@@ -32,7 +32,6 @@ module.exports.run = async (bot, message, args) => {
   function createandsendmsg() {
     let embed = new Discord.RichEmbed()
       .setAuthor(`${bot.user.username} help:`)
-      .setTitle('Note: these < > are requiered, and these [ ] are optional.')
       .setColor('#551A8B');
 
     for (let cmd in commands) {

@@ -38,12 +38,13 @@ module.exports.run = async (bot, message, args) => {
 		console.log(`linkow success: ${btag} ${message.author.username}  ${data.rating}sr`);
 		await message.reply({ embed: embed });
 	} else {
-		await message.reply("The leaderboard does not allow multiple accounts, ask your server admind to change that.");
+		await message.reply("The leaderboard is not set up or it does not allow multiple accounts.");
 	}
 
 	async function addPlayer(btag, platform, region, rank) {
 		const canMultiple = await Servers.findByPk(message.guild.id).then((guild) => {
-			return guild.lbAllowMultiple;
+			if (guild) return guild.lbAllowMultiple;
+			else return false;
 		});
 
 		const count = await Leaderboards.count({
