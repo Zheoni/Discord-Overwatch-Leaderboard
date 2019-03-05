@@ -1,13 +1,20 @@
 const Discord = require('discord.js');
 const { Accounts, Leaderboards } = require("../dbObjects");
+const Op = require('sequelize').Op;
 
 module.exports.run = async (bot, message, args) => {
     if (args[0]) {
         if (args[0] === "all") {
             Leaderboards.findAll({
                 where: {
-                    guild_id: message.guild.id,
-                    user_id: message.author.id,
+                    [Op.and]: {
+                        guild_id: {
+                            [Op.eq]: message.guild.id
+                        },
+                        user_id: {
+                            [Op.eq]: message.author.id
+                        }
+                    }
                 }
             }).then((entries) => {
                 for (let i = 0; i < entries.length; i++) {
@@ -40,22 +47,34 @@ module.exports.run = async (bot, message, args) => {
     function deleteBtag(btag) {
         return Leaderboards.destroy({
             where: {
-                guild_id: message.guild.id,
-                user_id: message.author.id,
-                battleTag: btag
+                [Op.and]: {
+                    guild_id: {
+                        [Op.eq]: message.guild.id
+                    },
+                    user_id: {
+                        [Op.eq]: message.author.id
+                    },
+                    battleTag: {
+                        [Op.eq]: btag
+                    }
+                }
             }
         });
     }
     function tryDeleteAccount(btag) {
         Leaderboards.count({
             where: {
-                battleTag: btag
+                battleTag: {
+                    [Op.eq]: btag
+                }
             }
         }).then((count) => {
             if (count == 0) {
                 Accounts.destroy({
                     where: {
-                        battleTag: btag
+                        battleTag: {
+                            [Op.eq]: btag
+                        }
                     }
                 });
                 console.log("Removed " + btag);

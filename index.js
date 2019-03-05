@@ -42,8 +42,14 @@ bot.on("guildMemberRemove", async function deleteMember(member) {
     let toRemove = [];
     await Leaderboards.findAll({
         where: {
-            guild_id: member.guild.id,
-            user_id: member.id
+            [Op.and]: {
+                guild_id: {
+                    [Op.eq]: member.guild.id
+                },
+                user_id: {
+                    [Op.eq]: member.id
+                }
+            }
         }
     }).then((btags) => {
         for (let i = 0; i < btags.length; i++) {
@@ -53,8 +59,14 @@ bot.on("guildMemberRemove", async function deleteMember(member) {
 
     await Leaderboards.destroy({
         where: {
-            guild_id: member.guild.id,
-            user_id: member.id
+            [Op.and]: {
+                guild_id: {
+                    [Op.eq]: member.guild.id
+                },
+                user_id: {
+                    [Op.eq]: member.id
+                }
+            }
         }
     });
 
@@ -75,7 +87,9 @@ bot.on("guildDelete", async function deleteGuild(guild) {
     let toRemove = [];
     await Leaderboards.findAll({
         where: {
-            guild_id: guild.id
+            guild_id: {
+                [Op.eq]: guild.id
+            }
         }
     }).then((btags) => {
         for (let i = 0; i < btags.length; i++) {
@@ -85,7 +99,9 @@ bot.on("guildDelete", async function deleteGuild(guild) {
 
     await Leaderboards.destroy({
         where: {
-            guild_id: guild.id
+            guild_id: {
+                [Op.eq]: guild.id
+            }
         }
     });
 
@@ -99,9 +115,11 @@ bot.on("guildDelete", async function deleteGuild(guild) {
 
     await Servers.destroy({
         where: {
-            guild_id: guild.id
+            guild_id: {
+                [Op.eq]: guild.id
+            }
         }
-    })
+    });
 
     console.log(`Left the server ${guild.name} and deleted its data`);
 });

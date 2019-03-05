@@ -2,6 +2,7 @@ const Discord = require('discord.js');
 const api = require("../overwatchData");
 
 const { Accounts, Leaderboards, Servers } = require("../dbObjects");
+const Op = require('sequelize').Op;
 
 module.exports.run = async (bot, message, args) => {
 	if (args[0]) { //if the are an argument
@@ -37,11 +38,7 @@ module.exports.run = async (bot, message, args) => {
 		} else return await message.reply('That does nothing');
 	}
 
-	const guild = await Servers.findOne({
-		where: {
-			guild_id: message.guild.id
-		}
-	});
+	const guild = await Servers.findByPk(message.guild.id);
 
 	if (guild && guild.lbEnable == true) {
 		message.delete();
@@ -85,7 +82,9 @@ async function showLeaderboard(bot, serverid) {
 	{
 		const players = await Leaderboards.findAll({
 			where: {
-				guild_id: serverid
+				guild_id: {
+					[Op.eq]: serverid
+				}
 			},
 			include: ['account']
 		});

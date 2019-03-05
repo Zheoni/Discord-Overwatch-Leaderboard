@@ -8,7 +8,7 @@ module.exports.run = async (bot, message, args) => {
 		platform = args[0].toLowerCase();
 		region = args[1].toLowerCase();
 		btag = args[2].replace("#", "-");
-	} else return await message.reply("Make sure you follow thr scheme !linkow <platflom> <region> <btag>");
+	} else return await message.reply("addAccount  [platform: pc, xbox, psn]  [region: eu, us, asia]  [BattleTag]");
 
 	//verify the args
 	if (platform != 'pc')
