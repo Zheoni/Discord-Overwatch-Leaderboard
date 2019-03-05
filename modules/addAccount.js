@@ -19,9 +19,13 @@ module.exports.run = async (bot, message, args) => {
 	//aks the api for the data
 	let data;
 	try {
+		let auxmsg = await message.channel.send("Searching profile...");
+
 		data = await api.fetchAPI(btag, platform, region).then((data) => {
 			return data;
 		});
+
+		await auxmsg.delete();
 	} catch (error) {
 		console.error(error);
 		console.log("Cannot fetch " + btag);
