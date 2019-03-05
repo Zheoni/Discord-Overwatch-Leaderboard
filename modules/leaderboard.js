@@ -16,7 +16,7 @@ module.exports.run = async (bot, message, args) => {
 			const msg = await message.channel.send("Setting up leaderboard...");
 
 			Servers.upsert({
-				serverid: message.guild.id,
+				guild_id: message.guild.id,
 				lbEnable: true,
 				lbChannel: msg.channel.id,
 				lbMsgId: msg.id,
@@ -30,7 +30,7 @@ module.exports.run = async (bot, message, args) => {
 				+ 'will have yo set it up again. You can delete this one');
 		} else if (args[0].toLowerCase() === 'disable') {	//and is 'disable'
 			Servers.upsert({
-				serverid: message.guild.id,
+				guild_id: message.guild.id,
 				lbEnable: false
 			});
 			return await message.reply('The leaderboard has been disabled');
@@ -39,13 +39,13 @@ module.exports.run = async (bot, message, args) => {
 
 	const guild = await Servers.findOne({
 		where: {
-			serverid: message.guild.id
+			guild_id: message.guild.id
 		}
 	});
 
 	if (guild && guild.lbEnable == true) {
 		message.delete();
-		showLeaderboard(bot, guild.serverid);
+		showLeaderboard(bot, guild.guild_id);
 	} else {
 		await message.reply('The leaderboard is not enabled');
 	}
@@ -93,7 +93,7 @@ async function showLeaderboard(bot, serverid) {
 			if (players[i].account.rank != 0 && players[i].account.rank != null) {
 				const entry = newPerson(players[i].username,
 					players[i].account.rank,
-					players[i].btag);
+					players[i].battleTag);
 				board.push(entry);
 			}
 		}

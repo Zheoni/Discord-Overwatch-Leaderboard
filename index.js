@@ -47,7 +47,7 @@ bot.on("guildMemberRemove", async function deleteMember(member) {
         }
     }).then((btags) => {
         for (let i = 0; i < btags.length; i++) {
-            toRemove.push(btags[i].btag);
+            toRemove.push(btags[i].battleTag);
         }
     });
 
@@ -79,7 +79,7 @@ bot.on("guildDelete", async function deleteGuild(guild) {
         }
     }).then((btags) => {
         for (let i = 0; i < btags.length; i++) {
-            toRemove.push(btags[i].btag);
+            toRemove.push(btags[i].battleTag);
         }
     });
 
@@ -99,7 +99,7 @@ bot.on("guildDelete", async function deleteGuild(guild) {
 
     await Servers.destroy({
         where: {
-            serverid: guild.id
+            guild_id: guild.id
         }
     })
 
@@ -111,7 +111,7 @@ bot.on("error", error => console.error(error));
 function showAllLeaderboards() {
     Servers.findAll().then((guilds) => {
         for (let i = 0; i < guilds.length; i++) {
-            const serverid = guilds[i].serverid;
+            const serverid = guilds[i].guild_id;
             lb.showLeaderboard(bot, serverid);
         }
     });

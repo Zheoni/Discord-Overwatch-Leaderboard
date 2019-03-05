@@ -11,7 +11,7 @@ module.exports.run = async (bot, message, args) => {
                 }
             }).then((entries) => {
                 for (let i = 0; i < entries.length; i++) {
-                    const btag = entries[i].btag;
+                    const btag = entries[i].battleTag;
                     deleteBtag(btag).then(() => {
                         tryDeleteAccount(btag);
                     }).catch((error) => {
@@ -42,14 +42,14 @@ module.exports.run = async (bot, message, args) => {
             where: {
                 guild_id: message.guild.id,
                 user_id: message.author.id,
-                btag: btag
+                battleTag: btag
             }
         });
     }
     function tryDeleteAccount(btag) {
         Leaderboards.count({
             where: {
-                btag: btag
+                battleTag: btag
             }
         }).then((count) => {
             if (count == 0) {

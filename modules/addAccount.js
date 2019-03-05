@@ -58,7 +58,7 @@ module.exports.run = async (bot, message, args) => {
 			});
 			Leaderboards.upsert({
 				guild_id: message.guild.id,
-				btag: btag,
+				battleTag: btag,
 				user_id: message.author.id,
 				username: message.author.username
 			});

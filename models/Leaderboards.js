@@ -5,7 +5,7 @@ module.exports = (sequelize, DataTypes) => {
             primaryKey: true,
             allowNull: false
         },
-        btag: {
+        battleTag: {
             type: DataTypes.STRING,
             primaryKey: true,
             allowNull: false
