@@ -1,138 +1,145 @@
 const botconfig = require("./botconfig.json");
 const Discord = require("discord.js");
 
-const leaderboard = require('./modules/leaderboard.js');
-const functions = require('./modules/functions.js');
-
 const bot = new Discord.Client();
 
-const updateTime = 1200000 //900000 = 15min | 1200000 = 20min | 3600000 = 1h
-const commandUpdaterTime = 250
-
-let commandsQueue = new Array();
-let ready = true;
-
-bot.login(botconfig.token); //login the bot with the token
-
+const lb = require("./modules/leaderboard");
+const { Servers, Leaderboards, Accounts } = require("./dbObjects");
+const updateTime = 1200000; //900000 = 15min | 1200000 = 20min | 3600000 = 1h
 //When the bot turns ready when turned on
-bot.on("ready", () => {
-  console.log(`${bot.user.username} is online on ${bot.guilds.size} server(s)!`);
-  bot.user.setActivity(`over you -> ${botconfig.prefix}help 👀`, { type: 'WATCHING' });
-  updateSequence(); //start the updating routine
-  setInterval(commandRunner, commandUpdaterTime);
+bot.once("ready", () => {
+    console.log(`${bot.user.username} is online on ${bot.guilds.size} server(s)!`);
+    bot.user.setActivity(`over you -> ${botconfig.prefix}help 👀`, { type: 'WATCHING' });
+    //start the updating routine
+    updateSequence();
+    setInterval(updateSequence, updateTime);
 });
 
 //Every msg sent to the server
 bot.on("message", async message => {
 
-  if (!message.content.startsWith(botconfig.prefix)) return; //if the msg does not starst with the prefix, ignore it
-  //if (message.author.bot) return; //if the author is a bot, ignore the msg.
+    if (!message.content.startsWith(botconfig.prefix)) return; //if the msg does not starst with the prefix, ignore it
+    if (message.author.bot) return; //if the author is a bot, ignore the msg.
 
-   //args is an array of the words after the command
-  let args = message.content.slice(botconfig.prefix.length).trim().split(' '); 
-  let cmd = args.shift().toLowerCase(); //cmd is the command executed (without the prefix)
-  let cmdfile;
-  try {
-    cmdfile = require(`./modules/${cmd}.js`);  //finds the command module
-  } catch (error) {
-    console.log(error);
-    return console.log('command ' + cmd + ' not found');
-  }
-  if (cmdfile && cmdfile.help.command) {           //if the module exist and its a command
-    commandsQueue.push({ file: cmdfile, message: message, args: args }); //add it to the queue
-    console.log(cmd + ' executed by ' + message.author.username + ' in ' + message.guild.name);   //log it
-  }
+    //args is an array of the words after the command
+    let args = message.content.slice(botconfig.prefix.length).trim().split(' ');
+    let cmd = args.shift().toLowerCase(); //cmd is the command executed (without the prefix)
+    let cmdfile;
+    try {
+        cmdfile = require(`./modules/${cmd}.js`);  //finds the command module
+    } catch (error) {
+        return console.log('command ' + cmd + ' not found');
+    }
+    if (cmdfile && cmdfile.help.command) {           //if the module exist and its a command
+        cmdfile.run(bot, message, args);
+        console.log(cmd + ' executed by ' + message.author.username + ' in ' + message.guild.name);   //log it
+    }
 });
 
 //When someone leaves the server
 bot.on("guildMemberRemove", async function deleteMember(member) {
-  if (ready == false) { //if the data is being used, try later
-    setTimeout(() => deleteMember(member), 1000);
-  }
-  ready = false;
-  let owdata = functions.loadData('owdata.json');
-  //if the bot has data of the player, deletes it
-  try {
-    if (owdata[member.guild.id]){
-      if (owdata[member.guild.id][member.id]){
-        delete owdata[member.guild.id][member.id];
-      }
-    } 
-  } catch (err) {
-    if(err){
-      ready = true;
-    } console.log(err);
-  }
-  functions.saveData(owdata, 'owdata.json');
-  console.log(`Deleted ${member.user.username} data, because he left the server ${member.guild.name}`);
-  ready = true;
+    const Op = require('sequelize').Op;
+    let toRemove = [];
+    await Leaderboards.findAll({
+        where: {
+            [Op.and]: {
+                guild_id: {
+                    [Op.eq]: member.guild.id
+                },
+                user_id: {
+                    [Op.eq]: member.id
+                }
+            }
+        }
+    }).then((btags) => {
+        for (let i = 0; i < btags.length; i++) {
+            toRemove.push(btags[i].battleTag);
+        }
+    });
+
+    await Leaderboards.destroy({
+        where: {
+            [Op.and]: {
+                guild_id: {
+                    [Op.eq]: member.guild.id
+                },
+                user_id: {
+                    [Op.eq]: member.id
+                }
+            }
+        }
+    });
+
+    await Accounts.destroy({
+        where: {
+            battleTag: {
+                [Op.in]: toRemove
+            }
+        }
+    });
+
+    console.log(`Deleted ${member.user.username} data, because he left the server ${member.guild.name}`);
 });
 
 //When a guild id left/deleted
 bot.on("guildDelete", async function deleteGuild(guild) {
-  if(ready == false){ //if the data is being used, try later
-    setTimeout(() => deleteGuild(guild), 1000);
-  }
-  ready = false;
-  let owdata = functions.loadData('owdata.json');
-  let lbdata = functions.loadData('lbdata.json');
-  let id = guild.id;
-  try {
-    if(owdata[id]) delete owdata[id];
-    if(lbdata[id]) delete lbdata[id];
-  } catch (err) {
-    if(err){
-      console.log(err);
-      ready = true;
-    }
-  }
-  functions.saveData(owdata, 'owdata.json');
-  functions.saveData(lbdata, 'lbdata.json');
-  ready = true;
-  console.log(`Left the server ${guild.name} and deleted its data`);
-})
+    const Op = require('sequelize').Op;
+    let toRemove = [];
+    await Leaderboards.findAll({
+        where: {
+            guild_id: {
+                [Op.eq]: guild.id
+            }
+        }
+    }).then((btags) => {
+        for (let i = 0; i < btags.length; i++) {
+            toRemove.push(btags[i].battleTag);
+        }
+    });
+
+    await Leaderboards.destroy({
+        where: {
+            guild_id: {
+                [Op.eq]: guild.id
+            }
+        }
+    });
+
+    await Accounts.destroy({
+        where: {
+            battleTag: {
+                [Op.in]: toRemove
+            }
+        }
+    });
+
+    await Servers.destroy({
+        where: {
+            guild_id: {
+                [Op.eq]: guild.id
+            }
+        }
+    });
+
+    console.log(`Left the server ${guild.name} and deleted its data`);
+});
 
 bot.on("error", error => console.error(error));
 
+function showAllLeaderboards() {
+    Servers.findAll().then((guilds) => {
+        for (let i = 0; i < guilds.length; i++) {
+            const serverid = guilds[i].guild_id;
+            lb.showLeaderboard(bot, serverid);
+        }
+    });
+}
+
 function updateSequence() {
-  console.log('Started auto-update loop:');
-  let servers;
-  let finished_count = 0;
-
-  function updateLeaderboard() {
-    console.log('Updating all servers data & leaderboard');
-    //check if the data is available
-    if(ready == false) return console.log('Tried to auto-update but a command was working');
-    //if it is:
-    let lbdata = functions.loadData('lbdata.json');
-    servers = Object.keys(lbdata);
-    if(servers.length <= 0) return console.log('There are no servers to update');
-    ready = false;
-    for(let i = 0; i < servers.length; i++){
-      console.log('server id: ' + servers[i]);
-      //if the leaderboard is enabled, update the data of the server and when finished, call 'finished'
-      if (lbdata[servers[i]].lbEnable) leaderboard.update(bot, servers[i], finished);
-      else console.log('the leaderboard is not enabled in ' + servers[i]);
-    }
-  }
-
-  function finished(){  //when all servers has been updated, set ready to true
-    finished_count++;
-    if(finished_count >= servers.length){
-      ready = true;
-    }
-  }
-
-  updateLeaderboard();
-  setInterval(updateLeaderboard, updateTime); 
+    console.log("Updating player's data");
+    lb.update();
+    console.log("Showing all leaderboards");
+    showAllLeaderboards();
 }
 
-async function commandRunner() {
-  //console.log(commandsQueue.length, ready);
-  if (commandsQueue.length > 0 && ready == true) {
-    ready = false;
-    let toRun = commandsQueue.shift()
-    await toRun.file.run(bot, toRun.message, toRun.args);
-    ready = true;
-  }
-}
+bot.login(botconfig.token); //login the bot with the token

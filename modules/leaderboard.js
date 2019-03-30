@@ -1,109 +1,100 @@
 const Discord = require('discord.js');
-const fetch = require('node-fetch');
+const api = require("../overwatchData");
 
-const functions = require('./functions.js');
+const { Accounts, Leaderboards, Servers } = require("../dbObjects");
+const Op = require('sequelize').Op;
 
 module.exports.run = async (bot, message, args) => {
-	let lbdata = functions.loadData('lbdata.json');
-
-	//This is for setting up the leaderboard in a channel
 	if (args[0]) { //if the are an argument
 		if (!message.member.hasPermission("ADMINISTRATOR")) return message.reply("you don't have permissions to do that.");
-		if (args[0].toLowerCase() === 'enable') {  //and is 'set'
-			//and the summoner is an admin, sets the leaderboard data
-			lbdata[message.guild.id] = {
-				guildName: message.guild.name,
-				lbChannel: message.channel.id,
-				lbEnable: true
+		if (args[0].toLowerCase() === 'enable') {  //and is 'enable'
+			// and the summoner is an admin, sets the leaderboard data
+			let canMultiple = false;
+			if (args[1] && args[1] === 'multiple') {
+				canMultiple = true;
 			}
 
-			await functions.saveData(lbdata, 'lbdata.json');//and save it
+			const msg = await message.channel.send("Setting up leaderboard...");
 
-			await message.reply('The leaderboard has been set to this channel.'
-				+ 'If you delete the first leaderboard message, you'
+			Servers.upsert({
+				guild_id: message.guild.id,
+				lbEnable: true,
+				lbChannel: msg.channel.id,
+				lbMsgId: msg.id,
+				lbAllowMultiple: canMultiple
+			});
+
+			showLeaderboard(bot, message.guild.id);
+
+			return await message.reply('The leaderboard has been set to this channel. '
+				+ 'If you delete the first leaderboard message, you '
 				+ 'will have yo set it up again. You can delete this one');
-
 		} else if (args[0].toLowerCase() === 'disable') {	//and is 'disable'
-			lbdata[message.guild.id].lbEnable = false;								//disables it
-			await functions.saveData(lbdata, 'lbdata.json');
-			return message.reply('The leaderboard has been disabled');
-		} else return message.reply('that does nothing my friend.');
+			Servers.upsert({
+				guild_id: message.guild.id,
+				lbEnable: false
+			});
+			return await message.reply('The leaderboard has been disabled');
+		} else return await message.reply('That does nothing');
 	}
 
-	//when the command is summoned in the correct channel and its enabled
-	if (lbdata[message.guild.id] &&
-		message.channel.id == lbdata[message.guild.id].lbChannel && lbdata[message.guild.id].lbEnable == true) {
+	const guild = await Servers.findByPk(message.guild.id);
 
-		await update(bot, message.guild.id); //shows the leaderboard
-		return message.delete(500);  //and delete the msg
-
-	} else return message.reply('the leaderboard is not set up in this channel');
-
-
+	if (guild && guild.lbEnable == true) {
+		message.delete();
+		showLeaderboard(bot, guild.guild_id);
+	} else {
+		await message.reply('The leaderboard is not enabled');
+	}
 }
 
-module.exports.update = (bot, serverid, callback) => update(bot, serverid, callback);
+module.exports.update = async function () {
+	const players = await Accounts.findAll();
+	for (let i = 0; i < players.length; i++) {
+		api.fetchAPI(players[i].battleTag, players[i].platform, players[i].region).then((data) => {
+			console.log(players[i].battleTag, data.rating);
+			Accounts.update({ rank: data.rating }, { where: { battleTag: players[i].battleTag } });
+		}).catch((error) => {
+			console.error(error);
+			console.log("Cannot fetch " + players[i].battleTag);
+		});
+	}
+};
 
 module.exports.help = {
 	name: "leaderboard",
 	command: true,
-	usage: "leaderboard	[enable/disable]",
-	description: "Enables or disables the leaderboard in the current channel. The leaderboard is updated every 20 minutes. With no arguments, just updates the leaderboard."
-}
-
-function update(bot, serverid, callback) {
-
-	let owdata = functions.loadData('owdata.json');
-
-	let players = new Array();
-	let i = 0;
-	for (let p in owdata[serverid]) {
-		players[i] = p;
-		i++;
-	}
-
-	async function processPlayers(x) {
-		if (x < players.length) {
-			try {
-				let link = `http://ovrstat.com/stats/${owdata[serverid][players[x]].platform}/${owdata[serverid][players[x]].region}/${owdata[serverid][players[x]].battleTag}`;
-				
-				let data = await fetch(link).then((response) => response.json());
-				console.log(owdata[serverid][players[x]].battleTag, data.rating);
-
-				if(data.rating != 0) owdata[serverid][players[x]].overwatch = { rank: data.rating };
-				else owdata[serverid][players[x]].overwatch = { rank: null };
-				processPlayers(x + 1);
-			} catch (error) {
-				console.error(error);
-				console.log('Problem fetching player ' + players[x] + ' in server ' + serverid);
-				processPlayers(x + 1);
-			}
-		} else {
-			functions.saveData(owdata, 'owdata.json');
-			console.log('Overwatch data updated successfuly in server ' + serverid);
-			showLeaderboard(bot, serverid, callback);
-		}
-	}
-
-	processPlayers(0);
+	usage: "leaderboard	[enable/disable] [multiple]",
+	description: "Enables or disables the leaderboard in the current channel. The leaderboard is updated every 20 minutes. With no arguments, just updates the leaderboard. 'multiple' allow one user to add more accounts"
 }
 
 function newPerson(username, rank, btag) {
 	return {
 		username: username,
 		rank: rank,
-		owusername: btag.split('-').shift()
+		owusername: btag.replace('-', '#')
 	};
 }
 
-function showLeaderboard(bot, serverid, callback) {
-	let owdata = functions.loadData('owdata.json');
-	let lbdata = functions.loadData('lbdata.json');
-	let board = new Array();
+async function showLeaderboard(bot, serverid) {
+	let board = [];
 
-	for (let p in owdata[serverid]) {
-		if (owdata[serverid][p].overwatch.rank) {	//if they are ranked
-			board.push(newPerson(owdata[serverid][p].username, owdata[serverid][p].overwatch.rank, owdata[serverid][p].battleTag)); //add the players to the leaderboard
+	{
+		const players = await Leaderboards.findAll({
+			where: {
+				guild_id: {
+					[Op.eq]: serverid
+				}
+			},
+			include: ['account']
+		});
+		for (let i = 0; i < players.length; i++) {
+			if (players[i].account.rank != 0 && players[i].account.rank != null) {
+				const entry = newPerson(players[i].username,
+					players[i].account.rank,
+					players[i].battleTag);
+				board.push(entry);
+			}
 		}
 	}
 
@@ -131,27 +122,24 @@ function showLeaderboard(bot, serverid, callback) {
 			default:
 				fieldName = `${i + 1}º`;
 		}
-		embed.addField(fieldName, `${board[i].rank}sr   |   **${board[i].username}** *(${board[i].owusername})*`);
+		embed.addField(fieldName, `${board[i].rank}sr   |   **${board[i].owusername}** *(${board[i].username})*`);
 	}
 	embed.addBlankField();
 
-	if (lbdata[serverid].lbMsgId) {	//if there is a message
+	const guild = await Servers.findByPk(serverid);
 
+	if (guild.lbMsgId) {	//if there is a message
 		try {
-			bot.guilds.get(serverid).channels.get(lbdata[serverid].lbChannel).fetchMessage(lbdata[serverid].lbMsgId).then(msg => msg.edit({ embed: embed })); //edit it
+			bot.guilds.get(serverid).channels.get(guild.lbChannel).fetchMessage(guild.lbMsgId).then(msg => msg.edit({ embed: embed })); //edit it
 		} catch (error) {
 			console.error(error);
-			console.log('There was a problem finding the lb msg');
+			console.log('There was a problem finding the leaderboards message');
 		}
-
-	} else {	//else send a msg and add it to the lbdata
-		bot.guilds.get(serverid).channels.get(lbdata[serverid].lbChannel).send({ embed: embed }).then((msg) => {
-			lbdata[serverid].lbMsgId = msg.id;
-			functions.saveData(lbdata, 'lbdata.json');
-		});
+	} else {
+		console.log("ERROR: No leaderboard message");
 	}
 
-	console.log('Leaderboard updated succesfuly in server' + serverid);
-
-	if (callback) callback(); //if theres a callback, run it
+	console.log('Leaderboard updated succesfuly in server ' + serverid);
 }
+
+module.exports.showLeaderboard = showLeaderboard;
