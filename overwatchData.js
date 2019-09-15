@@ -12,4 +12,30 @@ module.exports.fetchAPI = function (btag, platform) {
             reject(Error("Problem with API"));
         }
     });
-} 
+}
+
+module.exports.getRanks = function(data) {
+    let tank = null, dps = null, supp = null;
+
+    if (data.ratings) {
+
+        for (let i = 0; i < data.ratings.length; ++i) {
+            switch (data.ratings[i].role) {
+                case "tank":
+                    tank = data.ratings[i].level;
+                    break;
+                case "damage":
+                    dps = data.ratings[i].level;
+                    break;
+                case "support":
+                    supp = data.ratings[i].level;
+                    break;
+            }
+        }
+    }
+    return {
+        TANK: tank,
+        DAMAGE: dps,
+        SUPPORT: supp
+    }
+}

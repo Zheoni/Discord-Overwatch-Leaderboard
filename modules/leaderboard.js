@@ -1,5 +1,5 @@
 const Discord = require('discord.js');
-const api = require("../overwatchData");
+const ow = require("../overwatchData");
 
 const { Accounts, Leaderboards, Servers } = require("../dbObjects");
 const Op = require('sequelize').Op;
@@ -51,12 +51,12 @@ module.exports.run = async (bot, message, args) => {
 module.exports.update = async function () {
 	const players = await Accounts.findAll();
 	for (let i = 0; i < players.length; i++) {
-		api.fetchAPI(players[i].battleTag, players[i].platform, players[i].region).then((data) => {
-
+		ow.fetchAPI(players[i].battleTag, players[i].platform, players[i].region).then((data) => {
+			const ranks = ow.getRanks(data);
 			Accounts.update({
-				rankTANK: data.ratings[0].level,
-				rankDAMAGE: data.ratings[1].level,
-				rankSUPPORT: data.ratings[2].level },
+				rankTANK: ranks.TANK,
+				rankDAMAGE: ranks.DAMAGE,
+				rankSUPPORT: ranks.SUPPORT },
 				{ where: { battleTag: players[i].battleTag } });
 			console.log("Updated", players[i].battleTag);
 		}).catch((error) => {
@@ -105,7 +105,9 @@ async function showLeaderboard(bot, serverid) {
 				players[i].account.rankDAMAGE,
 				players[i].account.rankSUPPORT,
 				players[i].battleTag);
-			board.push(entry);
+			
+			if (entry.rankAverage != 0)
+				board.push(entry);
 		}
 	}
 
@@ -133,7 +135,7 @@ async function showLeaderboard(bot, serverid) {
 			default:
 				fieldName = `${i + 1}º`;
 		}
-		embed.addField(fieldName, ` 🛡${board[i].ranks.TANK}sr |  🔫${board[i].ranks.DAMAGE}sr | 💉${board[i].ranks.SUPPORT}sr |  **${board[i].owusername}** *(${board[i].username})*`);
+		embed.addField(fieldName, ` 🛡${board[i].ranks.TANK || " - "}sr |  🔫${board[i].ranks.DAMAGE || " - "}sr | 💉${board[i].ranks.SUPPORT || " - "}sr |  **${board[i].owusername}** *(${board[i].username})*`);
 	}
 	embed.addBlankField();
 
