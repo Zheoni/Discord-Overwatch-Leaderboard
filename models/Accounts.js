@@ -5,7 +5,6 @@ module.exports = (sequelize, DataTypes) => {
             primaryKey: true
         },
         platform: DataTypes.STRING(6),
-        region: DataTypes.STRING(6),
         rankTANK: {
             type: DataTypes.INTEGER,
             allowNull: true,
