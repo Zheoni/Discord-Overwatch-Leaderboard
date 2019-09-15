@@ -9,13 +9,15 @@ Download this repository. Install node (this is tested with 8.11.3) and npm. The
 
 - `npm install`
 
-- **Create the botconfig.json file** like this one, but replace with your bot token (find it in discord.com/developers) and the prefix you want:
+- **Edit the botconfig-sample.json file**, it is like this one. Replace with your bot token (find it in discord.com/developers) and the prefix you want ("!" for example).
 ```json
 {
   "token": "yourwonderfultoken",
   "prefix": "anytingyouwantbeforethecomands"
 }
 ```
+
+- **Rename the file to botconfig.json**.
 
 Then, for starting the bot use:
 
