@@ -111,7 +111,7 @@ async function showLeaderboard(bot, serverid) {
 		}
 	}
 
-	board.sort(function (a, b) { return a.rankAverage > b.rankAverage; });	//sort the leadeboard
+	board.sort(function (a, b) { return a.rankAverage < b.rankAverage; });	//sort the leadeboard
 
 	//console.log(board);
 
