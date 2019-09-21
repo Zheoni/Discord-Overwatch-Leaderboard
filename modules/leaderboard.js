@@ -1,5 +1,5 @@
 const Discord = require('discord.js');
-const api = require("../overwatchData");
+const ow = require("../overwatchData");
 
 const { Accounts, Leaderboards, Servers } = require("../dbObjects");
 const Op = require('sequelize').Op;
@@ -51,9 +51,14 @@ module.exports.run = async (bot, message, args) => {
 module.exports.update = async function () {
 	const players = await Accounts.findAll();
 	for (let i = 0; i < players.length; i++) {
-		api.fetchAPI(players[i].battleTag, players[i].platform, players[i].region).then((data) => {
-			console.log(players[i].battleTag, data.rating);
-			Accounts.update({ rank: data.rating }, { where: { battleTag: players[i].battleTag } });
+		ow.fetchAPI(players[i].battleTag, players[i].platform, players[i].region).then((data) => {
+			const ranks = ow.getRanks(data);
+			Accounts.update({
+				rankTANK: ranks.TANK,
+				rankDAMAGE: ranks.DAMAGE,
+				rankSUPPORT: ranks.SUPPORT },
+				{ where: { battleTag: players[i].battleTag } });
+			console.log("Updated", players[i].battleTag);
 		}).catch((error) => {
 			console.error(error);
 			console.log("Cannot fetch " + players[i].battleTag);
@@ -68,10 +73,16 @@ module.exports.help = {
 	description: "Enables or disables the leaderboard in the current channel. The leaderboard is updated every 20 minutes. With no arguments, just updates the leaderboard. 'multiple' allow one user to add more accounts"
 }
 
-function newPerson(username, rank, btag) {
+function newPerson(username, rankTANK, rankDAMAGE, rankSUPPORT, btag) {
+	const average = (rankTANK + rankDAMAGE + rankSUPPORT) / 3;
 	return {
 		username: username,
-		rank: rank,
+		ranks: {
+			TANK: rankTANK,
+			DAMAGE: rankDAMAGE,
+			SUPPORT: rankSUPPORT
+		},
+		rankAverage: average,
 		owusername: btag.replace('-', '#')
 	};
 }
@@ -89,16 +100,18 @@ async function showLeaderboard(bot, serverid) {
 			include: ['account']
 		});
 		for (let i = 0; i < players.length; i++) {
-			if (players[i].account.rank != 0 && players[i].account.rank != null) {
-				const entry = newPerson(players[i].username,
-					players[i].account.rank,
-					players[i].battleTag);
+			const entry = newPerson(players[i].username,
+				players[i].account.rankTANK,
+				players[i].account.rankDAMAGE,
+				players[i].account.rankSUPPORT,
+				players[i].battleTag);
+			
+			if (entry.rankAverage != 0)
 				board.push(entry);
-			}
 		}
 	}
 
-	board.sort(function (a, b) { return a.rank - b.rank }).reverse();		//sort the leadeboard
+	board.sort(function (a, b) { return a.rankAverage < b.rankAverage; });	//sort the leadeboard
 
 	//console.log(board);
 
@@ -122,7 +135,7 @@ async function showLeaderboard(bot, serverid) {
 			default:
 				fieldName = `${i + 1}º`;
 		}
-		embed.addField(fieldName, `${board[i].rank}sr   |   **${board[i].owusername}** *(${board[i].username})*`);
+		embed.addField(fieldName, ` 🛡${board[i].ranks.TANK || " - "}sr |  🔫${board[i].ranks.DAMAGE || " - "}sr | 💉${board[i].ranks.SUPPORT || " - "}sr |  **${board[i].owusername}** *(${board[i].username})*`);
 	}
 	embed.addBlankField();
 

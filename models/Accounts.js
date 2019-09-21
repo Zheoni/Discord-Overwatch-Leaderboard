@@ -5,8 +5,17 @@ module.exports = (sequelize, DataTypes) => {
             primaryKey: true
         },
         platform: DataTypes.STRING(6),
-        region: DataTypes.STRING(6),
-        rank: {
+        rankTANK: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+            defaultValue: null
+        },
+        rankDAMAGE: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+            defaultValue: null
+        },
+        rankSUPPORT: {
             type: DataTypes.INTEGER,
             allowNull: true,
             defaultValue: null
