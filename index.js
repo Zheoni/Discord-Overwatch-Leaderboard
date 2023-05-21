@@ -1,145 +1,67 @@
-const botconfig = require("./botconfig.json");
-const Discord = require("discord.js");
+const fs = require('node:fs');
+const path = require('node:path');
+const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
+const db = require("./database");
+const { startUpdates } = require('./autoUpdate');
 
-const bot = new Discord.Client();
+require("dotenv").config();
 
-const lb = require("./modules/leaderboard");
-const { Servers, Leaderboards, Accounts } = require("./dbObjects");
-const updateTime = 1200000; //900000 = 15min | 1200000 = 20min | 3600000 = 1h
-//When the bot turns ready when turned on
-bot.once("ready", () => {
-    console.log(`${bot.user.username} is online on ${bot.guilds.size} server(s)!`);
-    bot.user.setActivity(`over you -> ${botconfig.prefix}help 👀`, { type: 'WATCHING' });
-    //start the updating routine
-    updateSequence();
-    setInterval(updateSequence, updateTime);
-});
+const token = process.env.TOKEN;
 
-//Every msg sent to the server
-bot.on("message", async message => {
+// Create a new client instance
+const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
-    if (!message.content.startsWith(botconfig.prefix)) return; //if the msg does not starst with the prefix, ignore it
-    if (message.author.bot) return; //if the author is a bot, ignore the msg.
+client.commands = new Collection();
 
-    //args is an array of the words after the command
-    let args = message.content.slice(botconfig.prefix.length).trim().split(' ');
-    let cmd = args.shift().toLowerCase(); //cmd is the command executed (without the prefix)
-    let cmdfile;
+const commandsPath = path.join(__dirname, 'commands');
+const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+
+for (const file of commandFiles) {
+    const filePath = path.join(commandsPath, file);
+    const command = require(filePath);
+    // Set a new item in the Collection with the key as the command name and the value as the exported module
+    if ('data' in command && 'execute' in command) {
+        client.commands.set(command.data.name, command);
+    } else {
+        console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
+    }
+}
+
+client.on(Events.InteractionCreate, async interaction => {
+    if (!interaction.isChatInputCommand()) return;
+
+    const command = interaction.client.commands.get(interaction.commandName);
+
+    if (!command) {
+        console.error(`No command matching ${interaction.commandName} was found.`);
+        return;
+    }
+
     try {
-        cmdfile = require(`./modules/${cmd}.js`);  //finds the command module
+        await command.execute(interaction);
     } catch (error) {
-        return console.log('command ' + cmd + ' not found');
+        console.error(error);
+        if (interaction.replied || interaction.deferred) {
+            await interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true });
+        } else {
+            await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+        }
     }
-    if (cmdfile && cmdfile.help.command) {           //if the module exist and its a command
-        cmdfile.run(bot, message, args);
-        console.log(cmd + ' executed by ' + message.author.username + ' in ' + message.guild.name);   //log it
-    }
 });
 
-//When someone leaves the server
-bot.on("guildMemberRemove", async function deleteMember(member) {
-    const Op = require('sequelize').Op;
-    let toRemove = [];
-    await Leaderboards.findAll({
-        where: {
-            [Op.and]: {
-                guild_id: {
-                    [Op.eq]: member.guild.id
-                },
-                user_id: {
-                    [Op.eq]: member.id
-                }
-            }
-        }
-    }).then((btags) => {
-        for (let i = 0; i < btags.length; i++) {
-            toRemove.push(btags[i].battleTag);
-        }
-    });
-
-    await Leaderboards.destroy({
-        where: {
-            [Op.and]: {
-                guild_id: {
-                    [Op.eq]: member.guild.id
-                },
-                user_id: {
-                    [Op.eq]: member.id
-                }
-            }
-        }
-    });
-
-    await Accounts.destroy({
-        where: {
-            battleTag: {
-                [Op.in]: toRemove
-            }
-        }
-    });
-
-    console.log(`Deleted ${member.user.username} data, because he left the server ${member.guild.name}`);
+client.on(Events.GuildDelete, async guild => {
+    const deleted = await db.leaderboard.deleteMany({ where: { guildId: guild.id } });
+    console.log(`Left guild ${guild.name}, deleted ${deleted.count} leadeboards`);
 });
 
-//When a guild id left/deleted
-bot.on("guildDelete", async function deleteGuild(guild) {
-    const Op = require('sequelize').Op;
-    let toRemove = [];
-    await Leaderboards.findAll({
-        where: {
-            guild_id: {
-                [Op.eq]: guild.id
-            }
-        }
-    }).then((btags) => {
-        for (let i = 0; i < btags.length; i++) {
-            toRemove.push(btags[i].battleTag);
-        }
-    });
 
-    await Leaderboards.destroy({
-        where: {
-            guild_id: {
-                [Op.eq]: guild.id
-            }
-        }
-    });
 
-    await Accounts.destroy({
-        where: {
-            battleTag: {
-                [Op.in]: toRemove
-            }
-        }
-    });
-
-    await Servers.destroy({
-        where: {
-            guild_id: {
-                [Op.eq]: guild.id
-            }
-        }
-    });
-
-    console.log(`Left the server ${guild.name} and deleted its data`);
+// When the client is ready, run this code (only once)
+// We use 'c' for the event parameter to keep it separate from the already defined 'client'
+client.once(Events.ClientReady, c => {
+    console.log(`Ready! Logged in as ${c.user.tag}`);
+    startUpdates(c);
 });
 
-bot.on("error", error => console.error(error));
-
-function showAllLeaderboards() {
-    Servers.findAll().then((guilds) => {
-        for (let i = 0; i < guilds.length; i++) {
-            const serverid = guilds[i].guild_id;
-            lb.showLeaderboard(bot, serverid);
-        }
-    });
-}
-
-function updateSequence() {
-    console.log("Updating player's data");
-    lb.update();
-    console.log("Showing all leaderboards");
-    showAllLeaderboards();
-}
-
-bot.login(botconfig.token); //login the bot with the token
+// Log in to Discord with your client's token
+client.login(token);

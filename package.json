@@ -1,14 +1,10 @@
 {
-  "name": "Discord-Overwatch-Leaderboard",
-  "version": "2.0.0",
+  "name": "discord-overwatch-leaderboard",
+  "version": "3.0.0",
   "description": "An overwatch leaderboard in your server!",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "install": "node dbInit --force"
-  },
-  "engines": {
-    "node": "8.11.3"
+    "start": "node index.js"
   },
   "repository": {
     "type": "git",
@@ -21,9 +17,9 @@
   },
   "homepage": "https://github.com/Zheoni/Discord-Overwatch-Leaderboard#readme",
   "dependencies": {
-    "discord.js": "^11.3.2",
-    "node-fetch": "^2.3.0",
-    "sequelize": ">=5.3.0",
-    "sqlite3": "^4.0.6"
+    "@prisma/client": "4.14.1",
+    "discord.js": "^14.11.0",
+    "dotenv": "^16.0.3",
+    "prisma": "^4.14.1"
   }
 }

@@ -1,0 +1,33 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./database.sqlite"
+}
+
+model Leaderboard {
+  channelId String @id
+  messageId String
+  guildId   String
+
+  title      String?
+  splitRoles Boolean @default(false)
+
+  accounts Account[]
+}
+
+model Account {
+  leaderboardChannelId String
+  playerId             String
+  battleTag            String
+  userId               String? // optional because an admin can manually ad this account with no discord user attached
+
+  leaderboard Leaderboard @relation(fields: [leaderboardChannelId], references: [channelId], onDelete: Cascade)
+
+  @@id([leaderboardChannelId, playerId])
+}

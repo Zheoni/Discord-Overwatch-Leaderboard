@@ -1,5 +1,4 @@
-package-lock.json
 node_modules/
-botconfig.json
 *.sqlite
-mydbInit.js
+*.sqlite-journal
+.env
