@@ -26,8 +26,7 @@ async function leaderboardEmbeds(title, accounts, splitRoles) {
             rank: ranks[i],
         }));
 
-        if (splitRoles) {
-            const roles = ["tank", "damage", "support"];
+        const roles = ["tank", "damage", "support"];
             const embeds = [];
 
             for (const role of roles) {
@@ -47,6 +46,9 @@ async function leaderboardEmbeds(title, accounts, splitRoles) {
                 embeds.push(embed);
             }
             return embeds;
+            
+        if (splitRoles) {
+            
         } else {
             const embed = new EmbedBuilder()
                 .setTitle(title)
