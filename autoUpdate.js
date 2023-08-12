@@ -1,7 +1,7 @@
 const db = require("./database");
 const { leaderboardEmbeds, embedTitle } = require("./leaderboardEmbed");
 
-const updateTime = 3600000; //900000 = 15min | 1200000 = 20min | 3600000 = 1h
+const updateTime = 300000; //900000 = 15min | 1200000 = 20min | 3600000 = 1h
 
 
 let interval = null;
