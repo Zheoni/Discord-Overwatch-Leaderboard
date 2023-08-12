@@ -4,7 +4,7 @@
   "description": "An overwatch leaderboard in your server!",
   "main": "index.js",
   "scripts": {
-    "start": "npx prisma migrate deploy node index.js"
+    "start": "node deploy-commands guild node index.js"
   },
   "repository": {
     "type": "git",
