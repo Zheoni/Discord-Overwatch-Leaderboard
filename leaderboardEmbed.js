@@ -35,7 +35,7 @@ async function leaderboardEmbeds(title, accounts, splitRoles) {
                     .setTimestamp();
 
                 rankedAccounts.sort((a, b) => {
-                    return getSkillRating(a.rank?.[role]) ?? -1 > getSkillRating(b.rank?.[role]) ?? -1;
+                    return getSkillRating(a.rank?.[role]) < getSkillRating(b.rank?.[role]) ? 1 : -1
                 });
 
                 for (let i = 0; i < rankedAccounts.length; i++) {
