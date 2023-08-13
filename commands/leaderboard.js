@@ -132,7 +132,8 @@ module.exports = {
  * @param {import("discord.js").ChatInputCommandInteraction} interaction
  */
 async function createLeaderboard(interaction) {
-  const leaderboard = await getLeaderboardWithAccounts();
+  const leaderboard = await getLeaderboardWithAccounts({channelId:interaction.channelId});
+  console.log("asd " + leaderboard)
 
   if (!leaderboard) {
     return interaction.reply({
