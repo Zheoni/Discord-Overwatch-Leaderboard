@@ -26,7 +26,9 @@ module.exports = {
 
     console.log("interaction " + interaction);
 
-    const leaderboard = await getLeaderboardWithAccounts(interaction.channelId);
+    const leaderboard = await getLeaderboardWithAccounts({
+      channelId: interaction.channelId,
+    });
 
     console.log("leaderboard " + leaderboard);
 

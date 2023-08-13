@@ -132,10 +132,12 @@ module.exports = {
  * @param {import("discord.js").ChatInputCommandInteraction} interaction
  */
 async function createLeaderboard(interaction) {
-  const leaderboard = await getLeaderboardWithAccounts({channelId:interaction.channelId});
-  console.log("asd " + leaderboard)
+  const leaderboard = await getLeaderboardWithAccounts({
+    channelId: interaction.channelId,
+  });
+  console.log("el leaderboard " + leaderboard);
 
-  if (!leaderboard) {
+  if (leaderboard) {
     return interaction.reply({
       content: "This channel already has a leaderboard, remove it first.",
       ephemeral: true,
@@ -188,7 +190,9 @@ async function createLeaderboard(interaction) {
  * @param {import("discord.js").ChatInputCommandInteraction} interaction
  */
 async function editLeaderboard(interaction) {
-  const leaderboard = await getLeaderboardWithAccounts();
+  const leaderboard = await getLeaderboardWithAccounts({
+    channelId: interaction.channelId,
+  });
 
   if (!leaderboard) {
     return interaction.reply({
@@ -242,7 +246,9 @@ async function editLeaderboard(interaction) {
  * @param {import("discord.js").ChatInputCommandInteraction} interaction
  */
 async function destroyLeaderboard(interaction) {
-  const leaderboard = await getLeaderboardWithAccounts();
+  const leaderboard = await getLeaderboardWithAccounts({
+    channelId: interaction.channelId,
+  });
 
   if (!leaderboard) {
     return interaction.reply({
@@ -278,9 +284,11 @@ async function destroyLeaderboard(interaction) {
  * @param {import("discord.js").ChatInputCommandInteraction} interaction
  */
 async function update(interaction) {
-  const leaderboard = await getLeaderboardWithAccounts();
+  const leaderboard = await getLeaderboardWithAccounts({
+    channelId: interaction.channelId,
+  });
 
-  if (leaderboard === null) {
+  if (!leaderboard) {
     return interaction.reply({
       content: "This channel doesn't have an active leaderboard.",
       ephemeral: true,
@@ -305,7 +313,9 @@ async function update(interaction) {
  * @param {import("discord.js").ChatInputCommandInteraction} interaction
  */
 async function addAccount(interaction) {
-  const leaderboard = await getLeaderboardWithAccounts();
+  const leaderboard = await getLeaderboardWithAccounts({
+    channelId: interaction.channelId,
+  });
 
   if (!leaderboard) {
     return interaction.reply({
@@ -367,7 +377,9 @@ async function addAccount(interaction) {
  * @param {import("discord.js").ChatInputCommandInteraction} interaction
  */
 async function removeUser(interaction) {
-  const leaderboard = await getLeaderboardWithAccounts();
+  const leaderboard = await getLeaderboardWithAccounts({
+    channelId: interaction.channelId,
+  });
 
   if (!leaderboard) {
     return interaction.reply({
@@ -406,7 +418,9 @@ async function removeUser(interaction) {
  * @param {import("discord.js").ChatInputCommandInteraction} interaction
  */
 async function removeAccount(interaction) {
-  const leaderboard = await getLeaderboardWithAccounts();
+  const leaderboard = await getLeaderboardWithAccounts({
+    channelId: interaction.channelId,
+  });
 
   if (!leaderboard) {
     return interaction.reply({
@@ -417,7 +431,7 @@ async function removeAccount(interaction) {
 
   const battleTag = interaction.options.getString("account", true);
   const playerId = normalizeBattleTag(battleTag);
-  if (playerId === null) {
+  if (!playerId) {
     return interaction.reply({
       content: "This channel doesn't have an active leaderboard.",
       ephemeral: true,
