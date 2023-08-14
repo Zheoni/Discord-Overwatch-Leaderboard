@@ -23,7 +23,9 @@ async function getLeaderboardWithAccounts({ channelId }) {
     });
   }
 
-  return await response.json()[0];
+  const body = await response.json();
+
+  return body[0];
 }
 
 async function getAllLeaderboardWithAccounts() {

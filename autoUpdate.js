@@ -25,13 +25,14 @@ function stopUpdates() {
  */
 async function update(client) {
   const all = await getAllLeaderboardWithAccounts();
+
   for (const lb of all) {
     const guild = await client.guilds.fetch(lb.guildId);
     const channel = await guild.channels.fetch(lb.channelId);
     if (channel === null || !channel.isTextBased()) continue;
     const embeds = await leaderboardEmbeds(
       embedTitle(lb.title, guild.name),
-      lb.accounts
+      lb.Account
     );
     await channel.messages.edit(lb.messageId, { embeds });
   }

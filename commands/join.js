@@ -15,22 +15,27 @@ module.exports = {
    * @param {import("discord.js").ChatInputCommandInteraction} interaction
    */
   async execute(interaction) {
-    const battleTag = interaction.options.getString("battle-tag", true);
-    const playerId = normalizeBattleTag(battleTag);
-    if (playerId === null) {
+    const leaderboard = await getLeaderboardWithAccounts({
+      channelId: interaction.channelId,
+    });
+
+    if (!leaderboard) {
       return interaction.reply({
         content: "This channel doesn't have an active leaderboard.",
         ephemeral: true,
       });
     }
 
-    console.log("interaction " + interaction);
+    const battleTag = interaction.options.getString("battle-tag", true);
 
-    const leaderboard = await getLeaderboardWithAccounts({
-      channelId: interaction.channelId,
-    });
+    const playerId = normalizeBattleTag(battleTag);
 
-    console.log("leaderboard " + leaderboard);
+    if (playerId === null) {
+      return interaction.reply({
+        content: "This channel doesn't have an active leaderboard.",
+        ephemeral: true,
+      });
+    }
 
     await interaction.deferReply({ ephemeral: true });
 

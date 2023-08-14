@@ -135,7 +135,6 @@ async function createLeaderboard(interaction) {
   const leaderboard = await getLeaderboardWithAccounts({
     channelId: interaction.channelId,
   });
-  console.log("el leaderboard " + leaderboard);
 
   if (leaderboard) {
     return interaction.reply({
@@ -236,10 +235,10 @@ async function editLeaderboard(interaction) {
     ephemeral: true,
   });
   const embeds = await leaderboardEmbeds(
-    embedTitle(updated.title, interaction.guild.name),
-    updated.accounts
+    embedTitle(newTitle, interaction.guild.name),
+    leaderboard.Account
   );
-  await interaction.channel.messages.edit(updated.messageId, { embeds });
+  await interaction.channel.messages.edit(leaderboard.messageId, { embeds });
 }
 
 /**
@@ -299,7 +298,7 @@ async function update(interaction) {
   try {
     const embeds = await leaderboardEmbeds(
       embedTitle(leaderboard.title, interaction.guild.name),
-      leaderboard.accounts
+      leaderboard.Account
     );
     await interaction.channel.messages.edit(leaderboard.messageId, { embeds });
   } catch (error) {
@@ -429,7 +428,7 @@ async function removeAccount(interaction) {
     });
   }
 
-  const battleTag = interaction.options.getString("account", true);
+  const battleTag = interaction.options.getString("battle-tag", true);
   const playerId = normalizeBattleTag(battleTag);
   if (!playerId) {
     return interaction.reply({
