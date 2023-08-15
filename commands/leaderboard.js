@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
 const { battleTagOption, normalizeBattleTag } = require("../commonOptions");
-const db = require("../database");
+
 const { leaderboardEmbeds, embedTitle } = require("../leaderboardEmbed");
 const { getPlayerData } = require("../overwatchData");
 const {

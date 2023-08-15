@@ -1,7 +1,7 @@
 const { EmbedBuilder } = require("discord.js");
 const { SlashCommandBuilder } = require("discord.js");
 const { roleRankString, getPlayerData } = require("../overwatchData");
-const db = require("../database");
+
 const { battleTagOption, normalizeBattleTag } = require("../commonOptions");
 const { getLeaderboardWithAccounts } = require("../leaderboardServices");
 const { createAccount } = require("../accountServices");

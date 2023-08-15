@@ -1,4 +1,3 @@
-const db = require("./database");
 const { leaderboardEmbeds, embedTitle } = require("./leaderboardEmbed");
 const { getAllLeaderboardWithAccounts } = require("./leaderboardServices");
 
